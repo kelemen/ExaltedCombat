@@ -1,0 +1,6 @@
+build/
+dist/
+private/
+out/
+/ExaltedCombat/.settings/
+/ExaltedCombat/.idea/
