@@ -123,7 +123,7 @@ public enum WorldEvent implements ExaltedEvent {
      *  <li>Join phase</li>
      *  <li>Combat phase</li>
      * </ol>
-     * In the first phase (join phase), the entites will enter the combat but
+     * In the first phase (join phase), the entities will enter the combat but
      * will not yet act. The second phase of the combat is when the combat
      * really starts and entities start taking their actions.
      * <P>

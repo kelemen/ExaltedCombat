@@ -50,7 +50,7 @@ public final class SavedActiveEntityInfo implements Serializable {
      * @param entityInfo the object storing the basic properties of the
      *   entity. This argument cannot be {@code null}.
      * @param previousActions the history of actions of the entity in the order
-     *   the actions occured. The passed list is copied by this constructor,
+     *   the actions occurred. The passed list is copied by this constructor,
      *   modifying the passed list after this constructor returns will have no
      *   effect on the new instance. This argument cannot be {@code null} but
      *   can be an empty list.
@@ -98,7 +98,7 @@ public final class SavedActiveEntityInfo implements Serializable {
 
     /**
      * Returns the history of actions of an entity specified at construction
-     * time. The returned list contains actions in the order they occured.
+     * time. The returned list contains actions in the order they occurred.
      *
      * @return  the history of actions of an entity specified at construction
      *   time. The returned list readonly and is never {@code null}.

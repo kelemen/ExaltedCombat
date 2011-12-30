@@ -24,12 +24,12 @@ import resources.strings.*;
  *  <li>Remove an entity from combat.</li>
  * </ul>
  * <P>
- * Before actually using instances of this class, they must be intialized by
+ * Before actually using instances of this class, they must be initialized by
  * calling all of the following methods:
  * <ul>
  *  <li>
  *   {@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}:
- *   Sets the world model which is to be modifed by this panel and from which
+ *   Sets the world model which is to be modified by this panel and from which
  *   information needs to be retrieved.
  *  </li>
  *  <li>
@@ -69,7 +69,7 @@ public class InCombatActionPanel extends JPanel {
     private UndoManager undoManager;
 
     /**
-     * Creates a new panel which will be only effective after initialzied. After
+     * Creates a new panel which will be only effective after initialized. After
      * creating this instance don't forget to initialize it by calling these
      * methods:
      * <ul>

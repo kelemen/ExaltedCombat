@@ -25,7 +25,7 @@ public interface SaveDoneListener {
      * {@link #onSuccessfulSave(java.nio.file.Path) onSuccessfulSave(Path)}
      * method will not be called.
      *
-     * @param saveError the error describing the failure occured while saving
+     * @param saveError the error describing the failure occurred while saving
      *   the state of ExaltedCombat. This argument cannot be {@code null}.
      */
     public void onFailedSave(Throwable saveError);

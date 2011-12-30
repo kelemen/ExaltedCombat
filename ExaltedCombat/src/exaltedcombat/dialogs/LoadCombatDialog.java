@@ -21,7 +21,7 @@ import resources.strings.*;
  * this class can retrieve the reference to the filename of the saved state
  * which the user choose.
  * <P>
- * Once the user has choosen a specific file to load and closes the dialog:
+ * Once the user has chosen a specific file to load and closes the dialog:
  * Check {@link #isAccepted() isAccepted()} and if it returns {@code true},
  * load the file returned by {@link #getChoosenCombat() getChoosenCombat()}.
  * <P>
@@ -92,11 +92,11 @@ public class LoadCombatDialog extends JDialog {
     }
 
     /**
-     * Returns the filename of the previously saved combat state choosen by the
+     * Returns the filename of the previously saved combat state chosen by the
      * user. The return value of this method is only defined if
      * {@link #isAccepted() isAccepted()} returns {@code true}.
      *
-     * @return the filename of the previously saved combat state choosen by the
+     * @return the filename of the previously saved combat state chosen by the
      *   user. This method never returns {@code null} if {@code isAccepted()}
      *   returns {@code true}.
      */

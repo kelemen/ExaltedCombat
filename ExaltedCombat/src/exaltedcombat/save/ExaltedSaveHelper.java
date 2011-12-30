@@ -30,7 +30,7 @@ public final class ExaltedSaveHelper {
 
     /**
      * The file extension of the save files of ExaltedCombat. This string also
-     * contains the extension separtor '.' character.
+     * contains the extension separator '.' character.
      */
     public static final String SAVEFILE_EXTENSION = ".ec";
 
@@ -326,7 +326,7 @@ public final class ExaltedSaveHelper {
      * Stores path to a filename which can be later retrieved by a
      * {@link #getLastUsedPath() getLastUsedPath()} method call.
      * This method is intended to be used to store the last loaded
-     * save file, so when restarting ExaltedCombat, it can be automtically
+     * save file, so when restarting ExaltedCombat, it can be automatically
      * reloaded on startup.
      * <P>
      * This method currently stores the filename information in a file in the
@@ -347,7 +347,7 @@ public final class ExaltedSaveHelper {
      * Retrieves a file path previously saved by a
      * {@link #storeLastUsedPath(Path) storeLastUsedPath(Path)} method call.
      * <P>
-     * The returned path is intended to be used to automtically load the saved
+     * The returned path is intended to be used to automatically load the saved
      * state of ExaltedCombat on startup.
      *
      * @return the path to the last used save file of ExaltedCombat or

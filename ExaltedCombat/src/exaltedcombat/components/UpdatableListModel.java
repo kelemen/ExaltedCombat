@@ -23,7 +23,7 @@ public final class UpdatableListModel<E> extends DefaultListModel<E> {
      * The model will contain the specified elements in the order they are
      * returned by the iterator of the specified collection.
      *
-     * @param elements the intial elements of the list model. This argument
+     * @param elements the initial elements of the list model. This argument
      *   cannot be {@code null} nut can be an empty list instead.
      *
      * @throws NullPointerException if the specified collection is {@code null}
@@ -46,7 +46,7 @@ public final class UpdatableListModel<E> extends DefaultListModel<E> {
 
     /**
      * Notifies registered listeners that the content of the element at the
-     * specifed index has changed. The specified index should be a valid index
+     * specified index has changed. The specified index should be a valid index
      * in this model because registered listeners may not expect an out of range
      * index.
      *
@@ -58,7 +58,7 @@ public final class UpdatableListModel<E> extends DefaultListModel<E> {
 
     /**
      * Notifies registered listeners that the content of the elements between
-     * specifed indexes has changed. The specified indexes should be a valid
+     * specified indexes has changed. The specified indexes should be a valid
      * indexes in this model because registered listeners may not expect an out
      * of range index. Not however that {@code index0} and {@code index1} can
      * be exchanged (i.e.: it is not required that {@code index0 <= index1}).

@@ -38,9 +38,9 @@ import org.jtrim.utils.*;
  * {@link Object#toString() toString()} method of the
  * {@link SwingRight#getSubRight() subright} of the blocking
  * {@link SwingRight SwingRight} (an empty string if it is {@code null}).
- * Note that the component will not have a disabled look immediatelly to avoid
+ * Note that the component will not have a disabled look immediately to avoid
  * flickering when the component is blocked for only a short period of time.
- * Regardless this the component will still be blocked immediatelly, only it
+ * Regardless this the component will still be blocked immediately, only it
  * will not have a visual indication of this blocking state for a very short
  * period of time.
  * <P>

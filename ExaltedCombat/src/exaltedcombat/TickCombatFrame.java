@@ -944,7 +944,7 @@ public class TickCombatFrame extends JFrame {
      *
      * @param args currently this argument is ignored
      *
-     * @throws Throwable throws every uncaught exception to be catched by the
+     * @throws Throwable throws every uncaught exception to be caught by the
      *   JVM
      */
     public static void main(String args[]) throws Throwable {

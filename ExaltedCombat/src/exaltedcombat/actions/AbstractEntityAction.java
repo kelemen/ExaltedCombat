@@ -19,7 +19,7 @@ import resources.strings.*;
  * Note that none of the states of {@code AbstractEntityAction} can be changed,
  * so this class can be a base class for immutable implementations.
  * <P>
- * For subclasses to be serializable neeed to retrieve the object returned by
+ * For subclasses to be serializable need to retrieve the object returned by
  * the {@link #getAbstractContent() getAbstractContent()} method and serialize
  * the {@link AbstractContent} object. To deserialize use the protected
  * {@link #AbstractEntityAction(AbstractEntityAction.AbstractContent) AbstractEntityAction(AbstractEntityAction.AbstractContent)}
@@ -29,7 +29,7 @@ import resources.strings.*;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractEntityAction implements CombatEntityAction {
-    private static final LocalizedString OCCURED_AT_TICK = StringContainer.getDefaultString("OCCURED_AT_TICK");
+    private static final LocalizedString OCCURRED_AT_TICK = StringContainer.getDefaultString("OCCURRED_AT_TICK");
     private static final LocalizedString USER_DESCR_TEXT_CAPTION = StringContainer.getDefaultString("USER_DESCR_TEXT_CAPTION");
 
     private final int actionTick;
@@ -123,7 +123,7 @@ public abstract class AbstractEntityAction implements CombatEntityAction {
         result.append("\n");
 
         int displayedTick = getActionTick() + ExaltedConsts.TICK_OFFSET;
-        result.append(OCCURED_AT_TICK.format(displayedTick));
+        result.append(OCCURRED_AT_TICK.format(displayedTick));
 
         String userDescr = getUserDescription();
         if (!"".equals(userDescr)) {

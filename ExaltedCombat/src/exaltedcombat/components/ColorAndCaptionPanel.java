@@ -50,7 +50,7 @@ public class ColorAndCaptionPanel extends JPanel {
      * right of the solid square on this panel.
      *
      * @param caption the new label to be displayed. This argument can be
-     *   {@code null}, specifying {@code null} has the same effect as specifing
+     *   {@code null}, specifying {@code null} has the same effect as specifying
      *   {@code null} text value for a {@link JLabel} Swing component.
      */
     public void setPanelCaption(String caption) {

@@ -6,12 +6,12 @@ import resources.strings.*;
 
 /**
  * Defines the action which was taken by a combat entity to enter the combat.
- * Usually if entering the combat occured at zero
+ * Usually if entering the combat occurred at zero
  * {@link #getActionTick() action tick} it means that it was during the first
  * join phase of the combat. Note that this is not strictly required because
  * it is technically possible to enter after the first join phase and still do
  * that at tick zero. Note that if the action tick is greater than zero, the
- * action must have occured after the first join phase.
+ * action must have occurred after the first join phase.
  * <P>
  * Besides the required properties this action also contains the number of
  * successes rolled on a join battle roll. Specifying a negative integer for it

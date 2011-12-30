@@ -30,7 +30,7 @@ public abstract class SimpleDocChangeListener implements DocumentListener {
     /**
      * {@inheritDoc }
      * <P>
-     * This method cannot be overriden and will forward calls to it to the
+     * This method cannot be overridden and will forward calls to it to the
      * {@link #onChange(javax.swing.event.DocumentEvent) onChange(DocumentEvent)}
      * method. Therefore you need to override the {@code onChange} method
      * instead of this method.
@@ -43,7 +43,7 @@ public abstract class SimpleDocChangeListener implements DocumentListener {
     /**
      * {@inheritDoc }
      * <P>
-     * This method cannot be overriden and will forward calls to it to the
+     * This method cannot be overridden and will forward calls to it to the
      * {@link #onChange(javax.swing.event.DocumentEvent) onChange(DocumentEvent)}
      * method. Therefore you need to override the {@code onChange} method
      * instead of this method.
@@ -56,7 +56,7 @@ public abstract class SimpleDocChangeListener implements DocumentListener {
     /**
      * {@inheritDoc }
      * <P>
-     * This method cannot be overriden and will forward calls to it to the
+     * This method cannot be overridden and will forward calls to it to the
      * {@link #onChange(javax.swing.event.DocumentEvent) onChange(DocumentEvent)}
      * method. Therefore you need to override the {@code onChange} method
      * instead of this method.
@@ -76,7 +76,7 @@ public abstract class SimpleDocChangeListener implements DocumentListener {
     }
 
     /**
-     * Invoked when the document has changed. This method must be overriden
+     * Invoked when the document has changed. This method must be overridden
      * to receive events of changes in the listened document.
      * <P>
      * Note that if required

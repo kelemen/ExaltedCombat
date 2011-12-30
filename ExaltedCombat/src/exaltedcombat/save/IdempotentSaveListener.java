@@ -13,7 +13,7 @@ import org.jtrim.utils.ExceptionHelper;
  * to forward event).
  * <P>
  * This interface can be useful when a task need to canceled. Using this method
- * it is possible to notify the task immediatelly by invoking the appropriate
+ * it is possible to notify the task immediately by invoking the appropriate
  * method of the {@code SaveDoneListener}.
  *
  * @see ExaltedSaveHelper#createSaveRewTask(Path, SaveInfo, boolean, SaveDoneListener) ExaltedSaveHelper.createSaveRewTask(Path, SaveInfo, boolean, SaveDoneListener)

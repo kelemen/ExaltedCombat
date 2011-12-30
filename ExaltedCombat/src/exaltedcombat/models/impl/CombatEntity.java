@@ -399,7 +399,7 @@ public final class CombatEntity {
     /**
      * Returns the history of actions of this entity. This property is intended
      * to record the previous actions of this entity as a reference to the user.
-     * The returned list will contain the actions in the order they occured
+     * The returned list will contain the actions in the order they occurred
      * (was added by the
      * {@link #addAction(CombatEntityAction) addAction(CombatEntityAction)} or
      * the {@link #addActions(Collection) addActions(Collection)} method.

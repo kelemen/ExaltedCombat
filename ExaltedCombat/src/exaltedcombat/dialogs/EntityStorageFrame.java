@@ -21,12 +21,12 @@ import resources.icons.*;
 import resources.strings.*;
 
 /**
- * Defines a frame managing combat entites not currently in combat. This frame
+ * Defines a frame managing combat entities not currently in combat. This frame
  * is intended to be used to store and manage entities not actively used so they
  * don't clutter other dialogs.
  * <P>
  * This frame allows the stored combat entities to be moved to another storage
- * which is usally the main frame where active entities are organized.
+ * which is usually the main frame where active entities are organized.
  * <P>
  * This frame can be redisplayed after it has been {@link #dispose() closed}
  * and it will still display the entities this frame currently stores.
@@ -153,7 +153,7 @@ public class EntityStorageFrame extends JFrame implements EntityStorage {
     /**
      * {@inheritDoc }
      * <P>
-     * The specified entity will immediatelly displayed if this frame is
+     * The specified entity will immediately displayed if this frame is
      * visible.
      */
     @Override
@@ -164,7 +164,7 @@ public class EntityStorageFrame extends JFrame implements EntityStorage {
     /**
      * {@inheritDoc }
      * <P>
-     * The specified entities will immediatelly displayed if this frame is
+     * The specified entities will immediately displayed if this frame is
      * visible.
      */
     @Override
@@ -183,7 +183,7 @@ public class EntityStorageFrame extends JFrame implements EntityStorage {
     /**
      * {@inheritDoc }
      * <P>
-     * The modifications will immediatelly visible if this frame is visible.
+     * The modifications will immediately visible if this frame is visible.
      */
     @Override
     public void clearEntities() {

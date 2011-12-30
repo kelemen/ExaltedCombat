@@ -19,14 +19,14 @@ import resources.strings.*;
  * reasons: Security managers (like in an Applet) may not allow to invoke
  * {@code System.exit(int)}, therefore limiting the reusability of the code
  * using it. Also there can be outstanding unfinished tasks running in the
- * background, forcefully terminating them may cause dataloss. Therefore it
+ * background, forcefully terminating them may cause data loss. Therefore it
  * is a good practice to rely on the JVM to shutdown itself. The JVM shutdowns
  * itself automatically when there are only daemon threads alive. The caveat in
  * this is that sometimes due to programming errors a non-daemon thread could
  * remain alive (e.g.: an executor was not shutted down, an unhandled exception
  * in an AWT event handler may keep the AWT event dispatching thread running).
  * This error would cause the application to fail to terminate. This is a rather
- * serious issue since the avarage user will have no means to terminate the
+ * serious issue since the average user will have no means to terminate the
  * application which could have several annoying side effects. This class was
  * designed to circumvent this problem by allowing the user to forcefully
  * terminate the application if it fails to exit within a reasonable time.

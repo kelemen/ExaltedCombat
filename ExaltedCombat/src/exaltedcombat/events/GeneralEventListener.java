@@ -28,7 +28,7 @@ public interface GeneralEventListener<EventType> {
      * {@link EventManager#triggerEvent(Object, Object) EventManager.triggerEvent}
      * method call.
      *
-     * @param causes the causes of this current event. These events occured
+     * @param causes the causes of this current event. These events occurred
      *   before the current event leading to the call to this event. This
      *   argument cannot be {@code null}.
      * @param eventArg a user defined argument of this event. This argument

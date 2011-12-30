@@ -43,7 +43,7 @@ implements
     /**
      * Creates a new event manager with a given expected different event count.
      * The expected event count is not required for correctness but supplying a
-     * large enough value can improve preformace. However specifying too large
+     * large enough value can improve performance. However specifying too large
      * value can cause unnecessary memory overhead.
      * <P>
      * The expected number of event count is the number of different (defined by

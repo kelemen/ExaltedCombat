@@ -13,7 +13,7 @@ import org.jtrim.utils.ExceptionHelper;
  * <P>
  * Entities on the timeline has a certain tick value. This tick value defines
  * on which tick will they act. It is possible that on a certain tick there are
- * multiple entities in this case these entities acts simultenously.
+ * multiple entities in this case these entities acts simultaneously.
  * <P>
  * The current time is defined by the entity with the lowest tick value. If
  * there are no entities defined, the time is the last time when there were

@@ -43,7 +43,7 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     private CombatState combatState;
 
     /**
-     * Creates a new combat model with the given postion model. Note that this
+     * Creates a new combat model with the given position model. Note that this
      * constructor also needs to register itself to listen for changes in the
      * position model.
      *

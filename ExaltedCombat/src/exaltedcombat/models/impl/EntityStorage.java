@@ -45,7 +45,7 @@ public interface EntityStorage {
      * Adds a given entity to this storage. This method may or may not add
      * entities if they are already in this storage.
      * <P>
-     * After a successfuly call to this method, the {@code Collection} returned
+     * After a successfully call to this method, the {@code Collection} returned
      * by a subsequent call to {@link #getStoredEntities() getStoredEntities()}
      * will now contain the currently stored entity.
      * <P>
@@ -64,7 +64,7 @@ public interface EntityStorage {
      * Adds a {@code Collection} of given entities to this storage. This method
      * may or may not add entities if they are already in this storage.
      * <P>
-     * After a successfuly call to this method, the {@code Collection} returned
+     * After a successfully call to this method, the {@code Collection} returned
      * by a subsequent call to {@link #getStoredEntities() getStoredEntities()}
      * will now contain the currently stored entities.
      *

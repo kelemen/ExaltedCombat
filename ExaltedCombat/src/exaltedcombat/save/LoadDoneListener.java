@@ -20,7 +20,7 @@ public interface LoadDoneListener {
      * {@link #onSuccessfulLoad(exaltedcombat.save.SaveInfo) onSuccessfulLoad(SaveInfo)}
      * method will not be called.
      *
-     * @param error the error describing the failure occured while loading
+     * @param error the error describing the failure occurred while loading
      *   the previously saved state of ExaltedCombat. This argument cannot be
      *   {@code null}.
      */

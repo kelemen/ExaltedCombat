@@ -3,7 +3,7 @@
  * a file.
  * <P>
  * Saving to file is done through the serialization mechanism of Java,
- * therefore it is extremly important to maintain backward compatible
+ * therefore it is extremely important to maintain backward compatible
  * serialization for instance actually saved. That is: <B>Unless there is a very
  * good reason to do otherwise, use a serialization proxy</B>.
  * <P>

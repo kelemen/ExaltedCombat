@@ -68,7 +68,7 @@ public class BlockingMessagePanel extends JPanel {
 
     /**
      * Sets the background color of this panel. The panel will have the
-     * specified color as its background with the specified transparancy level
+     * specified color as its background with the specified transparency level
      * (ignoring the alpha component of the specified color). Unlike the
      * background of this panel the text message on this panel will have a
      * completely opaque background of the same color as the color specified

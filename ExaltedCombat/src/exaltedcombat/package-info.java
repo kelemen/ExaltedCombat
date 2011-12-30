@@ -33,7 +33,7 @@
  * <h3>Panels</h3>
  * The main frame completely relies panels found in the
  * {@code exaltedcombat.panels} package and without them it is only an empty
- * frame with a menubar. These panels are connected by the models and the event
+ * frame with a menu bar. These panels are connected by the models and the event
  * manager.
  *
  * <h3>Saving the state</h3>
@@ -52,12 +52,12 @@
  * <h3>Terminating the application</h3>
  * Under normal circumstances, {@code Sytem.exit} is not called to terminate the
  * application. Instead forcefully terminating the application when the main
- * frame is closed, it shuttowns the used executors and waits for every
+ * frame is closed, it shutdowns the used executors and waits for every
  * non-daemon thread to terminate.
  * <P>
  * However if not everything goes smoothly and an error does not allow
  * ExaltedCombat to terminate, it would be a major issue. This is major issue
- * because the only indiciation of this happening is that the java process is
+ * because the only indication of this happening is that the java process is
  * still running. This can be quite hard detect for the casual user and would
  * waste valuable resources (lots of memory, especially a problem on 32 bit
  * machines). To workaround this issue ExaltedCombat is able to detect that it

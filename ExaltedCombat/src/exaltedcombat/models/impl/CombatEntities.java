@@ -65,13 +65,13 @@ public final class CombatEntities {
         public void onChangedSelection(CombatEntity prevSelected, CombatEntity newSelected);
 
         /**
-         * Invoked when new entites were added to the population or entites
+         * Invoked when new entities were added to the population or entities
          * were removed from it.
          * <P>
          * When this method is called the population is already in the new
          * state and this method can modify the underlying model.
          * <P>
-         * <B>Warning</B>: Removing entites from the underlying model in this
+         * <B>Warning</B>: Removing entities from the underlying model in this
          * method is not strictly forbidden but is strongly discouraged because
          * it may cause selecting an entity to fail with an
          * {@code IllegaStateException}.

@@ -7,7 +7,7 @@ import java.awt.LayoutManager;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
- * A layout manager positioning compenents in a single horizontal row next to
+ * A layout manager positioning components in a single horizontal row next to
  * each other. Unlike {@link java.awt.FlowLayout FlowLayout} this layout manager
  * does not modify the size of the components and its minimum size is not
  * dependent on the components.

@@ -11,7 +11,7 @@
  * especially important to keep the serialization of these classes backward
  * compatible.
  * <P>
- * The best and easiest way to maintain backward compatibilty: <B>Use a
+ * The best and easiest way to maintain backward compatibility: <B>Use a
  * serialization proxy unless there is a very good reason to do otherwise.</B>
  */
 package exaltedcombat.actions;

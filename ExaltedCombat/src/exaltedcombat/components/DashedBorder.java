@@ -14,10 +14,10 @@ import org.jtrim.utils.*;
  * Defines a border with dashed lines. The dashes alternate between the colors
  * specified at construction time.
  * <P>
- * Note that it is unlikely to be able to completly fill the border with equal
+ * Note that it is unlikely to be able to completely fill the border with equal
  * dashes. As of the current implementation the bottom right corner of this
  * border may seem out of order. A future implementation may change to instead
- * dishonour the dash length.
+ * dishonor the dash length.
  * <P>
  * Instances of this border are explicitly allowed to be used by multiple
  * Swing components.
@@ -39,7 +39,7 @@ public final class DashedBorder implements Border {
     /**
      * Creates a new border with the given thickness, dash length and colors.
      * <P>
-     * Note that future implementation may not completely honour the specified
+     * Note that future implementation may not completely honor the specified
      * dash length to create more appealing border.
      *
      * @param thickness the width of the border in pixels. This argument cannot

@@ -12,7 +12,7 @@ import org.jtrim.utils.*;
  * Defines a task which is able to load the first serialized object from a given
  * file and return this object deserialized.
  * This task is cancelable and will respond to cancel requests even if it is
- * currently reading the file. Although this task should respond immediatelly,
+ * currently reading the file. Although this task should respond immediately,
  * it is still wrong to assume that it will do actually do so. Responding to a
  * cancel request must still be assumed to be only a best effort.
  * <P>
@@ -86,7 +86,7 @@ public final class CancelableDeserializer implements Future<Object> {
      * previously called {@code get} method to return and return the same
      * object.
      *
-     * @return the serialized object read from the file in its deserialzied
+     * @return the serialized object read from the file in its deserialized
      *   form. Since {@code null} values cannot be serialized, this method
      *   never returns {@code null}.
      *
@@ -97,7 +97,7 @@ public final class CancelableDeserializer implements Future<Object> {
      *   {@code null}.
      * @throws InterruptedException thrown if the current thread was
      *   interrupted. Note that the {@code get} method actually reading the
-     *   file will not respond to intertupts. To cancel loading the file
+     *   file will not respond to interrupts. To cancel loading the file
      *   invoke the {@link #cancel(boolean) cancel} method on a separate thread.
      */
     @Override
@@ -119,7 +119,7 @@ public final class CancelableDeserializer implements Future<Object> {
      *
      * @param timeout this argument is ignored
      * @param unit this argument is ignored
-     * @return the serialized object read from the file in its deserialzied
+     * @return the serialized object read from the file in its deserialized
      *   form. Since {@code null} values cannot be serialized, this method
      *   never returns {@code null}.
      *
@@ -130,7 +130,7 @@ public final class CancelableDeserializer implements Future<Object> {
      *   {@code null}.
      * @throws InterruptedException thrown if the current thread was
      *   interrupted. Note that the {@code get} method actually reading the
-     *   file will not respond to intertupts. To cancel loading the file
+     *   file will not respond to interrupts. To cancel loading the file
      *   invoke the {@link #cancel(boolean) cancel} method on a separate thread.
      */
     @Override

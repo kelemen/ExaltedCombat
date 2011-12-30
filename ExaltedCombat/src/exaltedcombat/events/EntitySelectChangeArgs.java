@@ -10,7 +10,7 @@ import exaltedcombat.models.impl.*;
  * <P>
  * Instances of this class are immutable (therefore thread-safe) and
  * transparent to any synchronization. Note however that the referenced combat
- * entites are not thread-safe, see {@link CombatEntity} for reference.
+ * entities are not thread-safe, see {@link CombatEntity} for reference.
  *
  * @see EventManager
  * @see WorldEvent#ENTITY_SELECT_CHANGE

@@ -9,7 +9,7 @@ import org.jtrim.utils.ExceptionHelper;
 
 /**
  * A {@link ListCellRenderer ListCellRenderer} for {@link JList JList}s
- * displaying a solid colored square along the caption of the enties. Entries
+ * displaying a solid colored square along the caption of the entities. Entries
  * of the list must implement {@link ColoredListCell} so they can provide the
  * required color and caption to be displayed. Each list element can have
  * different colors so they can be more easily distinguished by the user.

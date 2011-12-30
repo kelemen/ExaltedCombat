@@ -24,7 +24,7 @@ import resources.strings.*;
 /**
  * Defines a Swing panel displaying the ticks of a combat. This panel displays
  * ticks from a left to right order; entities on the same tick are above
- * eachother.
+ * each other.
  * <P>
  * This implementation needs a {@link CombatEntities population model}
  * to allow selecting an entity and an {@link EventManager event manager} to

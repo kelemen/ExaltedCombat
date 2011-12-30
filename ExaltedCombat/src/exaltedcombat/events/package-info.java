@@ -9,7 +9,7 @@
  * registered with Swing components need to just forward their events to this
  * {@code EventManager}. For these to work it is also important that there
  * should be only one {@code EventManager} instance in the JVM otherwise it
- * cannot manage events effectievly.
+ * cannot manage events effectively.
  * <P>
  * The actual reason to use an {@code EventManager} instead just handling
  * Swing events directly is because {@code EventManager} can keep track of
@@ -27,7 +27,7 @@
  * in ExaltedCombat yet).
  * <P>
  * Note that many of these classes and interfaces need to be redesigned. Once
- * their were redesigned and prooved to be good, they should be moved to JTrim.
+ * their were redesigned and proved to be good, they should be moved to JTrim.
  *
  * @see exaltedcombat.events.RecursionStopperEventManager
  */

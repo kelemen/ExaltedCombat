@@ -7,7 +7,7 @@ import java.util.*;
  * <P>
  * Entities on the timeline has a certain tick value. This tick value defines
  * on which tick will they act. It is possible that on a certain tick there are
- * multiple entities in this case these entities acts simultenously.
+ * multiple entities in this case these entities acts simultaneously.
  * <P>
  * The current time is defined by the entity with the lowest tick value. If
  * there are no entities defined, the time is the last time when there were
@@ -75,7 +75,7 @@ public interface CombatPositionModel<EntityType> {
      *
      * @return the map containing the entities in this tick based timeline. The
      *   returned map is independent of this model and is not required to be
-     *   mutable. Modifying this model has ne effect on the returned map. Also
+     *   mutable. Modifying this model has no effect on the returned map. Also
      *   notice that the lists in the returned map are never empty. This method
      *   never returns {@code null}.
      */
@@ -86,7 +86,7 @@ public interface CombatPositionModel<EntityType> {
      * equivalent to {@code getEntities().get(tick)} except that this method
      * never returns {@code null}.
      *
-     * @param tick the tick to be queried. This argument must greate than or
+     * @param tick the tick to be queried. This argument must greater than or
      *   equal to zero.
      * @return the list of entities on the specified tick. This method never
      *   returns {@code null} if there are no entities on the given tick, this

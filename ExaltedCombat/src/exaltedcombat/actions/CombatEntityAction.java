@@ -13,7 +13,7 @@ import java.io.*;
  * to maintain forward compatibility (older versions of the code being able
  * to load newer version of the serialized instance) but desirable if possible.
  * <P>
- * The best and easiest way to maintain backward compatibilty: <B>Use a
+ * The best and easiest way to maintain backward compatibility: <B>Use a
  * serialization proxy unless there is a very good reason to do otherwise.</B>
  * <P>
  * Note that instances of this class are required to be thread-safe and
@@ -28,11 +28,11 @@ import java.io.*;
  */
 public interface CombatEntityAction extends Serializable {
     /**
-     * The tick in which the action occured. This tick may not be the tick in
+     * The tick in which the action occurred. This tick may not be the tick in
      * which the entity were before doing this particular action but the time
      * of the combat when it was done.
      *
-     * @return the tick in which this action occured. This method always returns
+     * @return the tick in which this action occurred. This method always returns
      *   a non-negative integer.
      */
     public int getActionTick();

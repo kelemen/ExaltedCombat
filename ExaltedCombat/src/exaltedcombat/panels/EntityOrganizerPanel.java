@@ -31,12 +31,12 @@ import resources.strings.*;
  * </ul>
  * The entities of the population are shown in a list control.
  * <P>
- * Before actually using instances of this class, they must be intialized by
+ * Before actually using instances of this class, they must be initialized by
  * calling all of the following methods:
  * <ul>
  *  <li>
  *   {@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}:
- *   Sets the world model which is to be modifed by this panel and from which
+ *   Sets the world model which is to be modified by this panel and from which
  *   information needs to be retrieved.
  *  </li>
  *  <li>

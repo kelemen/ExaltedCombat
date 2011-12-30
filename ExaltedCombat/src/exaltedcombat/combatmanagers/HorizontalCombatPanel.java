@@ -34,7 +34,7 @@ import org.jtrim.utils.*;
  * method must be called on new instances to be effectively usable. If this
  * method is not called entities will be visually indistinguishable by the user.
  * <P>
- * Newly created instances of this class contains no entites on the combat
+ * Newly created instances of this class contains no entities on the combat
  * panel. The entities on the combat panel can be organized by calling the
  * methods derived from
  * {@link CombatPositionModel CombatPositionModel&lt;EntityType&gt;}.

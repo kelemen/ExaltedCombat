@@ -41,7 +41,7 @@ public interface CombatModel<EntityType> {
      * combat. The entities on the returned model are allowed be modified in
      * every combat state (not only in the join phase).
      * <P>
-     * Note that entites may enter the combat through the position model. If
+     * Note that entities may enter the combat through the position model. If
      * they do so they will not have a join combat roll but otherwise can act
      * normally.
      *
@@ -98,7 +98,7 @@ public interface CombatModel<EntityType> {
      * method, botches count as zero success rolls.
      *
      * @return the highest roll in the join phase for join combat. This method
-     *   returns zero if noone joined the combat in the join phase.
+     *   returns zero if no one joined the combat in the join phase.
      */
     public int getHighestJoinRoll();
 
@@ -106,7 +106,7 @@ public interface CombatModel<EntityType> {
      * Returns the number of successes rolled by an entity in the join combat
      * phase.
      *
-     * @param entity the entity whose roll is to be returned. This arugment
+     * @param entity the entity whose roll is to be returned. This argument
      *   cannot be {@code null}.
      * @return the number of successes rolled by an entity in the join combat
      *   phase. In case the entity joined the combat after the join

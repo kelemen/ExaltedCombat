@@ -81,14 +81,14 @@ public final class StringContainer {
     }
 
     /**
-     * Returns a string {@code Collator} which can be used to compate strings in
+     * Returns a string {@code Collator} which can be used to compare strings in
      * a local specific way. The returned {@code Collator} can be shared across
      * multiple threads concurrently.
      * <P>
      * The returned {@code Collator} is based on the locale returned by the
      * {@link #getLocale() getLocale()} method.
      *
-     * @return a string {@code Collator} which can be used to compate strings in
+     * @return a string {@code Collator} which can be used to compare strings in
      *   a local specific way. This method never
      */
     public Collator getStringCollator() {
@@ -101,7 +101,7 @@ public final class StringContainer {
      * language of the returned locale.
      *
      * @return the locale associated with this {@code StringContainer}. This
-     *   methdo never returns {@code null}.
+     *   method never returns {@code null}.
      */
     public Locale getLocale() {
         return resource.getLocale();

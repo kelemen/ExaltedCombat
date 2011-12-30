@@ -115,7 +115,7 @@ public class SaveCombatDialog extends JDialog {
      * (e.g.: clicking "Cancel").
      * <P>
      * If this method returns {@code true}, use the name of the save which was
-     * choosen by the user can be retrieved by calling the
+     * chosen by the user can be retrieved by calling the
      * {@link #getCombatName() getCombatName()} method and the complete path to
      * the file storing the saved state can be retrieved by the
      * {@link #getSavePath() getSavePath()} method. If this method returns
@@ -151,11 +151,11 @@ public class SaveCombatDialog extends JDialog {
     }
 
     /**
-     * Returns the name of the combat which was choosen by the user. This method
+     * Returns the name of the combat which was chosen by the user. This method
      * can only be used if {@link #isAccepted() isAccepted()} returns
      * {@code true}.
      *
-     * @return the name of the combat which was choosen by the user. This method
+     * @return the name of the combat which was chosen by the user. This method
      *   will never return {@code null} if {@link #isAccepted() isAccepted()}
      *   returns {@code true}.
      */

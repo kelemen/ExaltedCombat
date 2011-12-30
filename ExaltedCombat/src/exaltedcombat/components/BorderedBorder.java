@@ -17,9 +17,9 @@ import org.jtrim.utils.ExceptionHelper;
  * <P>
  * This border is intended to use for indicating that a component is selected.
  * This implementation has the advantage over simple borders that it can be
- * visible on any backgroung if the colors of its layers are different.
+ * visible on any background if the colors of its layers are different.
  * <P>
- * Note that this border can be defined by specifing its thickness (i.e.: the
+ * Note that this border can be defined by specifying its thickness (i.e.: the
  * width of the border in pixels) therefore there are three notable special case
  * where the above specifications for the border cannot be met:
  * <ul>

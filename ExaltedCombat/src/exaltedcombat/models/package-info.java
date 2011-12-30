@@ -7,7 +7,7 @@
  * package).
  * <P>
  * Models in ExaltedCombat must have a way to notify the user about changes
- * occuring in the model. This is important to do to enable remote parts of the
+ * occurring in the model. This is important to do to enable remote parts of the
  * code to cooperate.
  *
  * <h3>Important note on models</h3>

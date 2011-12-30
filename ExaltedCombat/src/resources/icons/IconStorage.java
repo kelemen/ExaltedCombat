@@ -55,7 +55,7 @@ public final class IconStorage {
      * <P>
      * The icon will be loaded the first time this method is called.
      *
-     * @return thesecondary icon for ExaltedCombat used by the dialogs and
+     * @return the secondary icon for ExaltedCombat used by the dialogs and
      *   frames other than the main frame. This method will only return
      *   {@code true} if the icon is unavailable or due to some serious error
      *   cannot be read. Note however if this method returns {@code null} it

@@ -11,7 +11,7 @@ import resources.strings.*;
  * Defines a generic action which was taken by a combat entity. In more general
  * sense: The entity was delayed by a certain amount of ticks. Two additional
  * properties define this action: the start tick and the speed. Start tick means
- * the tick when the next action of the entity would have occured, the speed
+ * the tick when the next action of the entity would have occurred, the speed
  * is the speed of the action which was taken (i.e.: the entity was delayed
  * by {@code speed} number of ticks).
  * <P>
@@ -28,7 +28,7 @@ public final class EntityMoveAction extends AbstractEntityAction {
     private static final long serialVersionUID = -987653882642499274L;
 
     private static final LocalizedString CAPTION_FORMAT = StringContainer.getDefaultString("MOVE_ACTION_CAPTION");
-    private static final LocalizedString OCCURED_AT_TICK = StringContainer.getDefaultString("OCCURED_AT_TICK");
+    private static final LocalizedString OCCURRED_AT_TICK = StringContainer.getDefaultString("OCCURRED_AT_TICK");
     private static final LocalizedString USER_DESCR_TEXT_CAPTION = StringContainer.getDefaultString("USER_DESCR_TEXT_CAPTION");
     private static final LocalizedString TICK_STR = StringContainer.getDefaultString("TICK_STR");
     private static final LocalizedString MOVE_TICK_TO_TICK_TEXT = StringContainer.getDefaultString("MOVE_TICK_TO_TICK_TEXT");
@@ -51,7 +51,7 @@ public final class EntityMoveAction extends AbstractEntityAction {
      *   will be returned by the {@link #getUserDescription() getUserDescription()}
      *   method, so it cannot be {@code null}.
      * @param startTick the tick when the next action of the entity would have
-     *   occured. This argument cannot be negative.
+     *   occurred. This argument cannot be negative.
      * @param speed the speed of the action taken. This argument can be negative
      *   to allow manual corrections. Note that although rules does not allow
      *   a speed to be greater than 6, this argument is explicitly allowed to
@@ -90,10 +90,10 @@ public final class EntityMoveAction extends AbstractEntityAction {
     }
 
     /**
-     * Returns the tick when the next action of the entity would have occured.
+     * Returns the tick when the next action of the entity would have occurred.
      * This value cannot be negative.
      *
-     * @return the tick when the next action of the entity would have occured.
+     * @return the tick when the next action of the entity would have occurred.
      *   This method never returns a negative integer.
      */
     public int getStartTick() {
@@ -122,7 +122,7 @@ public final class EntityMoveAction extends AbstractEntityAction {
         result.append("\n");
 
         int displayedTick = getActionTick() + ExaltedConsts.TICK_OFFSET;
-        result.append(OCCURED_AT_TICK.format(displayedTick));
+        result.append(OCCURRED_AT_TICK.format(displayedTick));
         result.append("\n");
 
         String tick0 = TICK_STR.format(getStartTick() + ExaltedConsts.TICK_OFFSET);
