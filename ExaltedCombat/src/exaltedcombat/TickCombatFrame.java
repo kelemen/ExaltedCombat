@@ -694,6 +694,7 @@ public class TickCombatFrame extends JFrame {
             this.name = name;
         }
 
+        @Override
         public String toString() {
             return name;
         }
