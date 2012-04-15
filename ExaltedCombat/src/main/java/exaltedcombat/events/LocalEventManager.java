@@ -1,11 +1,15 @@
 package exaltedcombat.events;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.jtrim.collections.RefLinkedList;
+import org.jtrim.collections.RefList;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -44,7 +48,7 @@ import org.jtrim.utils.ExceptionHelper;
 public class LocalEventManager<EventType> implements EventManager<EventType> {
     private final EventManager<EventType> wrappedManager;
     private final Lock mainLock;
-    private final Map<Registration<EventType>, AtomicInteger> registrations;
+    private final RefList<ListenerRef<GeneralEventListener<EventType>>> registrations;
 
     /**
      * Creates a new event manager delegating its calls to the specified
@@ -60,7 +64,7 @@ public class LocalEventManager<EventType> implements EventManager<EventType> {
         ExceptionHelper.checkNotNullArgument(wrappedManager, "wrappedManager");
         this.wrappedManager = wrappedManager;
         this.mainLock = new ReentrantLock();
-        this.registrations = new HashMap<>();
+        this.registrations = new RefLinkedList<>();
     }
 
     /**
@@ -91,43 +95,48 @@ public class LocalEventManager<EventType> implements EventManager<EventType> {
      * {@inheritDoc }
      */
     @Override
-    public void registerListener(EventType event, GeneralEventListener<EventType> listener) {
-        wrappedManager.registerListener(event, listener);
+    public ListenerRef<GeneralEventListener<EventType>> registerListener(
+            final EventType event, final GeneralEventListener<EventType> listener) {
+        final ListenerRef<GeneralEventListener<EventType>> listenerRef;
+        listenerRef = wrappedManager.registerListener(event, listener);
 
-        Registration<EventType> reg = new Registration<>(event, listener);
+        final RefList.ElementRef<?> registrationRef;
         mainLock.lock();
         try {
-            AtomicInteger counter = registrations.get(reg);
-            if (counter == null) {
-                counter = new AtomicInteger(0);
-                registrations.put(reg, counter);
-            }
-            counter.incrementAndGet();
+            registrationRef = registrations.addLastGetReference(listenerRef);
         } finally {
             mainLock.unlock();
         }
-    }
 
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void unregisterListener(EventType event, GeneralEventListener<EventType> listener) {
-        wrappedManager.unregisterListener(event, listener);
+        return new ListenerRef<GeneralEventListener<EventType>>() {
+            private final AtomicBoolean registered = new AtomicBoolean(true);
 
-        Registration<EventType> reg = new Registration<>(event, listener);
-        mainLock.lock();
-        try {
-            AtomicInteger counter = registrations.get(reg);
-            if (counter != null) {
-                int regCount = counter.decrementAndGet();
-                if (regCount <= 0) {
-                    registrations.remove(reg);
+            @Override
+            public boolean isRegistered() {
+                return registered.get();
+            }
+
+            @Override
+            public void unregister() {
+                if (registered.getAndSet(false)) {
+                    try {
+                        listenerRef.unregister();
+                    } finally {
+                        mainLock.lock();
+                        try {
+                            registrationRef.remove();
+                        } finally {
+                            mainLock.unlock();
+                        }
+                    }
                 }
             }
-        } finally {
-            mainLock.unlock();
-        }
+
+            @Override
+            public GeneralEventListener<EventType> getListener() {
+                return listener;
+            }
+        };
     }
 
     /**
@@ -142,67 +151,17 @@ public class LocalEventManager<EventType> implements EventManager<EventType> {
      * unregistered concurrently with this method call.
      */
     public void removeAllListeners() {
-        List<Map.Entry<Registration<EventType>, AtomicInteger>> toRemove;
+        List<ListenerRef<GeneralEventListener<EventType>>> toRemove;
         mainLock.lock();
         try {
-            toRemove = new ArrayList<>(registrations.entrySet());
+            toRemove = new ArrayList<>(registrations);
             registrations.clear();
         } finally {
             mainLock.unlock();
         }
 
-        for (Map.Entry<Registration<EventType>, AtomicInteger> entry: toRemove) {
-            EventType event = entry.getKey().getEvent();
-            GeneralEventListener<EventType> listener = entry.getKey().getListener();
-
-            int removeCount = entry.getValue().get();
-            for (int i = 0; i < removeCount; i++) {
-                wrappedManager.unregisterListener(event, listener);
-            }
-        }
-    }
-
-    private static class Registration<EventType> {
-        private final EventType event;
-        private final GeneralEventListener<EventType> listener;
-
-        public Registration(EventType event, GeneralEventListener<EventType> listener) {
-            this.event = event;
-            this.listener = listener;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Registration<?> other = (Registration<?>) obj;
-            if (!Objects.equals(this.event, other.event)) {
-                return false;
-            }
-            if (this.listener != other.listener) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 59 * hash + Objects.hashCode(event);
-            hash = 59 * hash + System.identityHashCode(listener);
-            return hash;
-        }
-
-        public EventType getEvent() {
-            return event;
-        }
-
-        public GeneralEventListener<EventType> getListener() {
-            return listener;
+        for (ListenerRef<GeneralEventListener<EventType>> listenerRef: toRemove) {
+            listenerRef.unregister();
         }
     }
 }

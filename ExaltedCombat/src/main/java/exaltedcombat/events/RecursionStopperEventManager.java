@@ -7,9 +7,10 @@ import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
 import org.jtrim.event.EventDispatcher;
 import org.jtrim.event.EventHandlerContainer;
-import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -43,7 +44,7 @@ implements
 
     private final ThreadLocal<EventCauses<EventType>> currentCauses;
     private final Lock registerLock;
-    private final ConcurrentMap<EventType, EventHandlerContainer<GeneralEventListener<EventType>>> listeners;
+    private final ConcurrentMap<EventType, EventHandlerContainer<GeneralEventListener<EventType>, Void>> listeners;
 
     /**
      * Creates a new event manager with a given expected different event count.
@@ -93,7 +94,7 @@ implements
     public void triggerEvent(EventType event, Object eventArg) {
         ExceptionHelper.checkNotNullArgument(event, "event");
 
-        EventHandlerContainer<GeneralEventListener<EventType>> currentListeners;
+        EventHandlerContainer<GeneralEventListener<EventType>, Void> currentListeners;
         currentListeners = listeners.get(event);
         if (currentListeners == null) {
             return;
@@ -110,7 +111,7 @@ implements
             EventCauses<EventType> newCauses = getCurrentCauses(event);
             currentCauses.set(newCauses);
             currentListeners.onEvent(
-                    new InternalDispatcher<>(newCauses, eventArg));
+                    new InternalDispatcher<>(newCauses, eventArg), null);
         } finally {
             if (previousCauses != null) {
                 currentCauses.set(previousCauses);
@@ -126,17 +127,18 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public void registerListener(EventType event, GeneralEventListener<EventType> listener) {
+    public ListenerRef<GeneralEventListener<EventType>> registerListener(
+            EventType event, GeneralEventListener<EventType> listener) {
         ExceptionHelper.checkNotNullArgument(event, "event");
         ExceptionHelper.checkNotNullArgument(listener, "listener");
 
         boolean registered;
+        ListenerRef<GeneralEventListener<EventType>> storingRef = null;
         do {
-            EventHandlerContainer<GeneralEventListener<EventType>> currentListeners;
-            currentListeners = listeners.get(event);
+            EventHandlerContainer<GeneralEventListener<EventType>, Void> currentListeners = listeners.get(event);
             if (currentListeners == null) {
-                EventHandlerContainer<GeneralEventListener<EventType>> newListeners;
-                newListeners = new LifoEventHandlerContainer<>();
+                EventHandlerContainer<GeneralEventListener<EventType>, Void> newListeners;
+                newListeners = new CopyOnTriggerEventHandlerContainer<>();
                 currentListeners = listeners.putIfAbsent(event, newListeners);
                 if (currentListeners == null) {
                     currentListeners = newListeners;
@@ -147,37 +149,20 @@ implements
             try {
                 registered = listeners.get(event) == currentListeners;
                 if (registered) {
-                    currentListeners.registerListener(listener);
+                    storingRef = currentListeners.registerListener(listener);
                 }
             } finally {
                 registerLock.unlock();
             }
         } while (!registered);
-    }
 
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void unregisterListener(EventType event, GeneralEventListener<EventType> listener) {
-        ExceptionHelper.checkNotNullArgument(event, "event");
-        ExceptionHelper.checkNotNullArgument(listener, "listener");
-
-        EventHandlerContainer<GeneralEventListener<EventType>> currentListeners;
-        currentListeners = listeners.get(event);
-
-        if (currentListeners != null) {
-            registerLock.lock();
-            try {
-                currentListeners.removeListener(listener);
-                if (currentListeners.getListenerCount() == 0) {
-                    Object prevListeners = listeners.remove(event);
-                    assert prevListeners == currentListeners;
-                }
-            } finally {
-                registerLock.unlock();
-            }
+        if (storingRef == null) {
+            throw new IllegalStateException("registerListener returned a null reference.");
         }
+
+        // TODO: remove the key from the map when the associated
+        //   EventHandlerContainer contains no more listeners.
+        return storingRef;
     }
 
     private void setCauseAndRun(EventCauses<EventType> cause, Runnable command) {
@@ -296,7 +281,7 @@ implements
 
     private static class InternalDispatcher<EventType>
     implements
-            EventDispatcher<GeneralEventListener<EventType>> {
+            EventDispatcher<GeneralEventListener<EventType>, Void> {
 
         private final EventCauses<EventType> causes;
         private final Object eventArg;
@@ -307,7 +292,7 @@ implements
         }
 
         @Override
-        public void onEvent(GeneralEventListener<EventType> eventListener) {
+        public void onEvent(GeneralEventListener<EventType> eventListener, Void arg) {
             eventListener.onEvent(causes, eventArg);
         }
     }

@@ -3,9 +3,10 @@ package exaltedcombat.models.impl;
 import exaltedcombat.actions.CombatEntityAction;
 import java.awt.Color;
 import java.util.*;
+import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
 import org.jtrim.event.EventDispatcher;
 import org.jtrim.event.EventHandlerContainer;
-import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -101,16 +102,43 @@ public final class CombatEntity {
         public void onChangedPreviousAction(CombatEntity entity);
     }
 
-    private final EventHandlerContainer<UpdateListener> listeners;
+    private final EventHandlerContainer<UpdateListener, CombatEntity> listeners;
     private String shortName;
     private Color color;
     private String description;
     private final List<CombatEntityAction> previousAction;
 
-    private final EventDispatcher<UpdateListener> changeShortNameDispatcher;
-    private final EventDispatcher<UpdateListener> changeColorDispatcher;
-    private final EventDispatcher<UpdateListener> changeDescriptionDispatcher;
-    private final EventDispatcher<UpdateListener> changeActionDispatcher;
+    private static final EventDispatcher<UpdateListener, CombatEntity> changeShortNameDispatcher;
+    private static final EventDispatcher<UpdateListener, CombatEntity> changeColorDispatcher;
+    private static final EventDispatcher<UpdateListener, CombatEntity> changeDescriptionDispatcher;
+    private static final EventDispatcher<UpdateListener, CombatEntity> changeActionDispatcher;
+
+    static {
+        changeShortNameDispatcher = new EventDispatcher<UpdateListener, CombatEntity>() {
+            @Override
+            public void onEvent(UpdateListener eventListener, CombatEntity entity) {
+                eventListener.onChangedShortName(entity);
+            }
+        };
+        changeColorDispatcher = new EventDispatcher<UpdateListener, CombatEntity>() {
+            @Override
+            public void onEvent(UpdateListener eventListener, CombatEntity entity) {
+                eventListener.onChangedColor(entity);
+            }
+        };
+        changeDescriptionDispatcher = new EventDispatcher<UpdateListener, CombatEntity>() {
+            @Override
+            public void onEvent(UpdateListener eventListener, CombatEntity entity) {
+                eventListener.onChangedDescription(entity);
+            }
+        };
+        changeActionDispatcher = new EventDispatcher<UpdateListener, CombatEntity>() {
+            @Override
+            public void onEvent(UpdateListener eventListener, CombatEntity entity) {
+                eventListener.onChangedPreviousAction(entity);
+            }
+        };
+    }
 
     /**
      * Creates a new combat entity with the same properties as the specified
@@ -146,70 +174,31 @@ public final class CombatEntity {
         ExceptionHelper.checkNotNullArgument(color, "color");
         ExceptionHelper.checkNotNullArgument(description, "description");
 
-        this.listeners = new LifoEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
         this.shortName = shortName;
         this.color = color;
         this.description = description;
         this.previousAction = new LinkedList<>();
-
-        this.changeShortNameDispatcher = new EventDispatcher<UpdateListener>() {
-            @Override
-            public void onEvent(UpdateListener eventListener) {
-                eventListener.onChangedShortName(CombatEntity.this);
-            }
-        };
-        this.changeColorDispatcher = new EventDispatcher<UpdateListener>() {
-            @Override
-            public void onEvent(UpdateListener eventListener) {
-                eventListener.onChangedColor(CombatEntity.this);
-            }
-        };
-        this.changeDescriptionDispatcher = new EventDispatcher<UpdateListener>() {
-            @Override
-            public void onEvent(UpdateListener eventListener) {
-                eventListener.onChangedDescription(CombatEntity.this);
-            }
-        };
-        this.changeActionDispatcher = new EventDispatcher<UpdateListener>() {
-            @Override
-            public void onEvent(UpdateListener eventListener) {
-                eventListener.onChangedPreviousAction(CombatEntity.this);
-            }
-        };
     }
 
     /**
      * Registers a new listener to listen for changes in the properties of this
-     * entity.  The registered listener can be removed by a call to the
-     * {@link #removeUpdateListener(CombatEntity.UpdateListener) removeUpdateListener(CombatEntity.UpdateListener)}
-     * method.
+     * entity.  The registered listener can be removed using the returned
+     * reference.
      * <P>
      * Note that in case the listener was already registered implementations
      * may ignore this call as a no-op.
      *
      * @param listener the listener to be notified when a property of this
      *   entity changes. This argument cannot be {@code null}.
+     * @return the reference through which the newly added listener can be
+     *   removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public void addUpdateListener(UpdateListener listener) {
-        listeners.registerListener(listener);
-    }
-
-    /**
-     * Unregisters a previously registered property change listener. If the
-     * listener was not registered or was already unregistered this call does
-     * nothing.
-     *
-     * @param listener the listener to removed and no longer be notified of the
-     *   property changes in this entity. This argument cannot be {@code null}.
-     *
-     * @throws NullPointerException thrown if the specified listener is
-     *   {@code null}
-     */
-    public void removeUpdateListener(UpdateListener listener) {
-        listeners.removeListener(listener);
+    public ListenerRef<UpdateListener> addUpdateListener(UpdateListener listener) {
+        return listeners.registerListener(listener);
     }
 
     /**
@@ -241,7 +230,7 @@ public final class CombatEntity {
 
         if (!Objects.equals(this.color, color)) {
             this.color = color;
-            listeners.onEvent(changeColorDispatcher);
+            listeners.onEvent(changeColorDispatcher, this);
         }
     }
 
@@ -276,7 +265,7 @@ public final class CombatEntity {
 
         if (!Objects.equals(this.description, description)) {
             this.description = description;
-            listeners.onEvent(changeDescriptionDispatcher);
+            listeners.onEvent(changeDescriptionDispatcher, this);
         }
     }
 
@@ -310,7 +299,7 @@ public final class CombatEntity {
 
         if (!Objects.equals(this.shortName, shortName)) {
             this.shortName = shortName;
-            listeners.onEvent(changeShortNameDispatcher);
+            listeners.onEvent(changeShortNameDispatcher, this);
         }
     }
 
@@ -331,7 +320,7 @@ public final class CombatEntity {
         }
 
         previousAction.remove(previousAction.size() - 1);
-        listeners.onEvent(changeActionDispatcher);
+        listeners.onEvent(changeActionDispatcher, this);
     }
 
     /**
@@ -379,7 +368,7 @@ public final class CombatEntity {
                 ExceptionHelper.checkNotNullArgument(action, "action");
                 previousAction.add(action);
             }
-            listeners.onEvent(changeActionDispatcher);
+            listeners.onEvent(changeActionDispatcher, this);
         }
     }
 

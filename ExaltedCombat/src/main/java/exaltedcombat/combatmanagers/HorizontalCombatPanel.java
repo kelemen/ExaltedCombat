@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.jtrim.concurrent.UpdateTaskExecutor;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.swing.concurrent.SwingUpdateTaskExecutor;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -131,16 +132,9 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public void removeCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        model.removeCombatPosListener(listener);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void addCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        model.addCombatPosListener(listener);
+    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
+            CombatPosEventListener<EntityType> listener) {
+        return model.addCombatPosListener(listener);
     }
 
     private void revalidateAndRepaint() {

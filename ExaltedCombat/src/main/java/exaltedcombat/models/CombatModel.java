@@ -1,5 +1,7 @@
 package exaltedcombat.models;
 
+import org.jtrim.event.ListenerRef;
+
 /**
  * Defines the model of a combat in Exalted. The model defines the current
  * {@link #getCombatState() state of the combat} and the position of the
@@ -52,34 +54,22 @@ public interface CombatModel<EntityType> {
 
     /**
      * Registers a new listener to listen for changes in the state of the
-     * combat. The registered listener can be removed by a call to the
-     * {@link #removeCombatStateChangeListener(CombatStateChangeListener) removeCombatStateChangeListener(CombatStateChangeListener)}
-     * method.
+     * combat. The registered listener can be removed using the returned
+     * reference.
      * <P>
      * Note that in case the listener was already registered implementations
      * may ignore this call as a no-op.
      *
      * @param listener the listener to be notified when the state of the combat
      *   changes. This argument cannot be {@code null}.
+     * @return the reference through which the newly added listener can be
+     *   removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public void addCombatStateChangeListener(CombatStateChangeListener listener);
-
-    /**
-     * Unregisters a previously registered combat state change listener. If the
-     * listener was not registered or was already unregistered this call does
-     * nothing.
-     *
-     * @param listener the listener to be removed and no longer be notified of
-     *   the changes in the state of combat. This argument cannot be
-     *   {@code null}
-     *
-     * @throws NullPointerException thrown if the specified listener is
-     *   {@code null}
-     */
-    public void removeCombatStateChangeListener(CombatStateChangeListener listener);
+    public ListenerRef<CombatStateChangeListener> addCombatStateChangeListener(
+            CombatStateChangeListener listener);
 
     /**
      * Returns the current state of the combat. The combat can be either the

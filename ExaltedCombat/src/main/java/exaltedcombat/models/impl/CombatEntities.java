@@ -3,9 +3,10 @@ package exaltedcombat.models.impl;
 import exaltedcombat.models.impl.CombatEntity.UpdateListener;
 import java.util.*;
 import org.jtrim.collections.CollectionsEx;
+import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
 import org.jtrim.event.EventDispatcher;
 import org.jtrim.event.EventHandlerContainer;
-import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -79,12 +80,12 @@ public final class CombatEntities {
         public void onChangedEntities();
     }
 
-    private final Set<CombatEntity> entities;
+    private final Map<CombatEntity, ListenerRef<?>> entities;
     private CombatEntity selected;
 
-    private final EventHandlerContainer<UpdateListener> updateListeners;
-    private final EventHandlerContainer<ChangeListener> changeListeners;
-    private final EventDispatcher<ChangeListener> changedEntitiesDispatcher;
+    private final EventHandlerContainer<UpdateListener, Void> updateListeners;
+    private final EventHandlerContainer<ChangeListener, Void> changeListeners;
+    private final EventDispatcher<ChangeListener, Void> changedEntitiesDispatcher;
     private final UpdateListener entityUpdateListener;
 
     /**
@@ -100,55 +101,55 @@ public final class CombatEntities {
      *   is a negative integer
      */
     public CombatEntities(int expectedEntityCount) {
-        this.updateListeners = new LifoEventHandlerContainer<>();
-        this.changeListeners = new LifoEventHandlerContainer<>();
-        this.entities = CollectionsEx.newHashSet(expectedEntityCount);
+        this.updateListeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.changeListeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.entities = CollectionsEx.newHashMap(expectedEntityCount);
         this.selected = null;
 
         this.entityUpdateListener = new CombatEntity.UpdateListener() {
             @Override
             public void onChangedShortName(final CombatEntity entity) {
-                updateListeners.onEvent(new EventDispatcher<UpdateListener>() {
+                updateListeners.onEvent(new EventDispatcher<UpdateListener, Void>() {
                     @Override
-                    public void onEvent(UpdateListener eventListener) {
+                    public void onEvent(UpdateListener eventListener, Void arg) {
                         eventListener.onChangedShortName(entity);
                     }
-                });
+                }, null);
             }
 
             @Override
             public void onChangedColor(final CombatEntity entity) {
-                updateListeners.onEvent(new EventDispatcher<UpdateListener>() {
+                updateListeners.onEvent(new EventDispatcher<UpdateListener, Void>() {
                     @Override
-                    public void onEvent(UpdateListener eventListener) {
+                    public void onEvent(UpdateListener eventListener, Void arg) {
                         eventListener.onChangedColor(entity);
                     }
-                });
+                }, null);
             }
 
             @Override
             public void onChangedDescription(final CombatEntity entity) {
-                updateListeners.onEvent(new EventDispatcher<UpdateListener>() {
+                updateListeners.onEvent(new EventDispatcher<UpdateListener, Void>() {
                     @Override
-                    public void onEvent(UpdateListener eventListener) {
+                    public void onEvent(UpdateListener eventListener, Void arg) {
                         eventListener.onChangedDescription(entity);
                     }
-                });
+                }, null);
             }
 
             @Override
             public void onChangedPreviousAction(final CombatEntity entity) {
-                updateListeners.onEvent(new EventDispatcher<UpdateListener>() {
+                updateListeners.onEvent(new EventDispatcher<UpdateListener, Void>() {
                     @Override
-                    public void onEvent(UpdateListener eventListener) {
+                    public void onEvent(UpdateListener eventListener, Void arg) {
                         eventListener.onChangedPreviousAction(entity);
                     }
-                });
+                }, null);
             }
         };
-        this.changedEntitiesDispatcher = new EventDispatcher<ChangeListener>() {
+        this.changedEntitiesDispatcher = new EventDispatcher<ChangeListener, Void>() {
             @Override
-            public void onEvent(ChangeListener eventListener) {
+            public void onEvent(ChangeListener eventListener, Void arg) {
                 eventListener.onChangedEntities();
             }
         };
@@ -157,44 +158,27 @@ public final class CombatEntities {
     /**
      * Registers a new listener to listen for changes in the population
      * (add, remove entities or change selection). The registered listener can
-     * be removed by a call to the
-     * {@link #removeChangeListener(CombatEntities.ChangeListener) removeChangeListener(CombatEntities.ChangeListener)}
-     * method.
+     * be removed using the returned reference.
      * <P>
      * Note that in case the listener was already registered implementations
      * may ignore this call as a no-op.
      *
      * @param listener the listener to be notified when the population changes.
      *   This argument cannot be {@code null}.
+     * @return the reference through which the currently added listener can be
+     *   removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public void addChangeListener(ChangeListener listener) {
-        changeListeners.registerListener(listener);
-    }
-
-    /**
-     * Unregisters a previously registered population change listener. If the
-     * listener was not registered or was already unregistered this call does
-     * nothing.
-     *
-     * @param listener the listener to removed and no longer be notified of the
-     *   changes in this population. This argument cannot be {@code null}.
-     *
-     * @throws NullPointerException thrown if the specified listener is
-     *   {@code null}
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        changeListeners.removeListener(listener);
+    public ListenerRef<ChangeListener> addChangeListener(ChangeListener listener) {
+        return changeListeners.registerListener(listener);
     }
 
     /**
      * Registers a new listener to listen for changes in the properties of the
-     * entities of this population. The registered listener can be removed by a
-     * call to the
-     * {@link #removeUpdateListener(CombatEntity.UpdateListener) removeUpdateListener(CombatEntity.UpdateListener)}
-     * method.
+     * entities of this population. The registered listener can be removed using
+     * the returned reference.
      * <P>
      * Note that in case the listener was already registered implementations
      * may ignore this call as a no-op.
@@ -205,32 +189,18 @@ public final class CombatEntities {
      * @param listener the listener to be notified when the property of an
      *   entity of this population changes. This argument cannot be
      *   {@code null}.
+     * @return the reference through which the currently added listener can be
+     *   removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public void addUpdateListener(UpdateListener listener) {
-        updateListeners.registerListener(listener);
-    }
-
-    /**
-     * Unregisters a previously registered entity attribute change listener. If
-     * the listener was not registered or was already unregistered this call
-     * does nothing.
-     *
-     * @param listener the listener to removed and no longer be notified of the
-     *   property changes in this population. This argument cannot be
-     *   {@code null}.
-     *
-     * @throws NullPointerException thrown if the specified listener is
-     *   {@code null}
-     */
-    public void removeUpdateListener(UpdateListener listener) {
-        updateListeners.removeListener(listener);
+    public ListenerRef<UpdateListener> addUpdateListener(UpdateListener listener) {
+        return updateListeners.registerListener(listener);
     }
 
     private void dispatchChangedEntites() {
-        changeListeners.onEvent(changedEntitiesDispatcher);
+        changeListeners.onEvent(changedEntitiesDispatcher, null);
     }
 
     /**
@@ -247,7 +217,7 @@ public final class CombatEntities {
      *   mutable.
      */
     public Collection<CombatEntity> getEntities() {
-        return new ArrayList<>(entities);
+        return new ArrayList<>(entities.keySet());
     }
 
     /**
@@ -268,7 +238,7 @@ public final class CombatEntities {
     public boolean containsEntity(CombatEntity entity) {
         ExceptionHelper.checkNotNullArgument(entity, "entity");
 
-        return entities.contains(entity);
+        return entities.containsKey(entity);
     }
 
     /**
@@ -288,8 +258,8 @@ public final class CombatEntities {
 
         CombatEntity currentSelection = selected;
         if (currentSelection == null) {
-            for (CombatEntity entity: entities) {
-                entity.removeUpdateListener(entityUpdateListener);
+            for (ListenerRef<?> listenerRef: entities.values()) {
+                listenerRef.unregister();
             }
             entities.clear();
             dispatchChangedEntites();
@@ -329,12 +299,15 @@ public final class CombatEntities {
             }
         }
 
-        boolean removed = entities.remove(entity);
-        if (removed) {
-            entity.removeUpdateListener(entityUpdateListener);
+        ListenerRef<?> listenerRef = entities.remove(entity);
+        if (listenerRef != null) {
+            listenerRef.unregister();
             dispatchChangedEntites();
+            return true;
         }
-        return removed;
+        else {
+            return false;
+        }
     }
 
     /**
@@ -387,8 +360,13 @@ public final class CombatEntities {
                 // is highly unlikely to happen and we cannot offer any
                 // guarantees in the face of concurrent modifications.
                 ExceptionHelper.checkNotNullArgument(entity, "newEntities[?]");
-                if (entities.add(entity)) {
-                    entity.addUpdateListener(entityUpdateListener);
+
+                ListenerRef<?> listenerRef = entity.addUpdateListener(entityUpdateListener);
+                ListenerRef<?> prevRef = entities.put(entity, listenerRef);
+                if (prevRef != null) {
+                    prevRef.unregister();
+                }
+                else {
                     changed = true;
                 }
             }
@@ -418,17 +396,17 @@ public final class CombatEntities {
             return;
         }
 
-        changeListeners.onEvent(new EventDispatcher<ChangeListener>() {
+        changeListeners.onEvent(new EventDispatcher<ChangeListener, Void>() {
             @Override
-            public void onEvent(ChangeListener eventListener) {
+            public void onEvent(ChangeListener eventListener, Void arg) {
                 eventListener.onChangedSelection(oldSelection, newSelection);
             }
-        });
+        }, null);
     }
 
     /**
      * Sets the given entity as the selected entity of this population. The
-     * previously selected entity will be descelected. In case the specified
+     * previously selected entity will be deselected. In case the specified
      * entity is not part of this population it will be added before actually
      * being selected. This method will notify the appropriate listeners of the
      * changes in this population and the new selection.
@@ -445,10 +423,10 @@ public final class CombatEntities {
             return;
         }
 
-        if (toSelect != null && !entities.contains(toSelect)) {
+        if (toSelect != null && !entities.containsKey(toSelect)) {
             addEntity(toSelect);
 
-            if (!entities.contains(toSelect)) {
+            if (!entities.containsKey(toSelect)) {
                throw new IllegalStateException("The entity was removed by a listener after being added.");
             }
         }

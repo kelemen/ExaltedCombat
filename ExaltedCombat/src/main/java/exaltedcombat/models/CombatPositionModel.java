@@ -3,6 +3,7 @@ package exaltedcombat.models;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.jtrim.event.ListenerRef;
 
 /**
  * Defines a model for the position of entities on a tick based timeline.
@@ -39,25 +40,14 @@ public interface CombatPositionModel<EntityType> {
      *
      * @param listener the listener to be notified when changes occur in this
      *   tick based timeline. This argument cannot be {@code null}.
+     * @return the reference to the added listener, through which the listener
+     *   can be removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public void addCombatPosListener(CombatPosEventListener<EntityType> listener);
-
-    /**
-     * Unregisters a previously registered position change listener. If the
-     * listener was not registered or was already unregistered this call does
-     * nothing.
-     *
-     * @param listener the listener to be removed and no longer be notified of
-     *   the changes in this tick based timeline. This argument cannot be
-     *   {@code null}
-     *
-     * @throws NullPointerException thrown if the specified listener is
-     *   {@code null}
-     */
-    public void removeCombatPosListener(CombatPosEventListener<EntityType> listener);
+    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
+            CombatPosEventListener<EntityType> listener);
 
     /**
      * Returns the number of entities currently in combat.

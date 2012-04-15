@@ -2,6 +2,7 @@ package exaltedcombat.events;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import org.jtrim.event.ListenerRef;
 
 /**
  * Forwards events to listeners and keeps track of which event was caused
@@ -77,40 +78,21 @@ public interface EventManager<EventType> {
      * <P>
      * The registered event handler should be removed when no longer needed to
      * avoid unnecessary object retention. A registered event handler can be
-     * removed by a {@link #unregisterListener(java.lang.Object, exaltedcombat.events.GeneralEventListener) unregisterListener}
-     * method call.
+     * removed using the returned reference.
      *
      * @param event the event of which the event handler is notified of. This
      *   argument cannot be {@code null}.
      * @param listener the event handler which will be notified when the
      *   specified event occur due to a {@code triggerEvent} method call. This
      *   argument cannot be {@code null}.
+     * @return the reference through which the registered listener can be
+     *   removed. This method never returns {@code null}.
      *
      * @throws NullPointerException thrown if any of the arguments is
      *   {@code null}
      */
-    public void registerListener(EventType event, GeneralEventListener<EventType> listener);
-
-    /**
-     * Removes a previously
-     * {@link #registerListener(java.lang.Object, exaltedcombat.events.GeneralEventListener) registered}
-     * event handler.
-     * <P>
-     * The equality of event handlers are determined by reference
-     * comparison (==). If the implementation allows registering a listener
-     * multiple times, it will remove the given listener exactly once. Note that
-     * in case the listener was not registered (or was already unregistered)
-     * this method returns silently, doing nothing.
-     *
-     * @param event the event to no longer be notified of through the given
-     *   event handler. This argument cannot be {@code null}.
-     * @param listener the listener no longer notified when the specified event
-     *   occurs. This argument cannot be {@code null}.
-     *
-     * @throws NullPointerException thrown if any of the arguments is
-     *   {@code null}
-     */
-    public void unregisterListener(EventType event, GeneralEventListener<EventType> listener);
+    public ListenerRef<GeneralEventListener<EventType>> registerListener(
+            EventType event, GeneralEventListener<EventType> listener);
 
     /**
      * Creates an {@link Executor Executor} which delegates tasks to the

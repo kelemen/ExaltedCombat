@@ -3,9 +3,10 @@ package exaltedcombat.combatmanagers;
 import exaltedcombat.models.CombatPosEventListener;
 import exaltedcombat.models.CombatPositionModel;
 import java.util.*;
+import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
 import org.jtrim.event.EventDispatcher;
 import org.jtrim.event.EventHandlerContainer;
-import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -44,7 +45,7 @@ implements
     private final Map<EntityType, Integer> timeTable;
     private final SortedMap<Integer, List<EntityType>> ticks;
 
-    private final EventHandlerContainer<CombatPosEventListener<EntityType>> listeners;
+    private final EventHandlerContainer<CombatPosEventListener<EntityType>, Void> listeners;
 
     private int currentTick;
 
@@ -55,7 +56,7 @@ implements
     public TickBasedEventManager() {
         this.timeTable = new HashMap<>();
         this.ticks = new TreeMap<>();
-        this.listeners = new LifoEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
         this.currentTick = 0;
     }
 
@@ -63,16 +64,9 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public void addCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        listeners.registerListener(listener);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void removeCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        listeners.removeListener(listener);
+    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
+            CombatPosEventListener<EntityType> listener) {
+        return listeners.registerListener(listener);
     }
 
     private void invalidateCurrentTick() {
@@ -156,20 +150,20 @@ implements
         }
 
         if (fromTick >= 0) {
-            listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>>() {
+            listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>, Void>() {
                 @Override
-                public void onEvent(CombatPosEventListener<EntityType> eventListener) {
+                public void onEvent(CombatPosEventListener<EntityType> eventListener, Void arg) {
                     eventListener.move(id, fromTick, toTick);
                 }
-            });
+            }, null);
         }
         else {
-            listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>>() {
+            listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>, Void>() {
                 @Override
-                public void onEvent(CombatPosEventListener<EntityType> eventListener) {
+                public void onEvent(CombatPosEventListener<EntityType> eventListener, Void arg) {
                     eventListener.enterCombat(id, toTick);
                 }
-            });
+            }, null);
         }
     }
 
@@ -196,12 +190,12 @@ implements
     }
 
     private void dispatchRemoveEvent(final Collection<? extends EntityType> entities) {
-        listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>>() {
+        listeners.onEvent(new EventDispatcher<CombatPosEventListener<EntityType>, Void>() {
             @Override
-            public void onEvent(CombatPosEventListener<EntityType> eventListener) {
+            public void onEvent(CombatPosEventListener<EntityType> eventListener, Void arg) {
                 eventListener.leaveCombat(entities);
             }
-        });
+        }, null);
     }
 
     /**

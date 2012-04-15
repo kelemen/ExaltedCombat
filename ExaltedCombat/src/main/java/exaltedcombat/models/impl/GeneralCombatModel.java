@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jtrim.collections.CollectionsEx;
+import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
 import org.jtrim.event.EventDispatcher;
 import org.jtrim.event.EventHandlerContainer;
-import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -36,7 +37,7 @@ import org.jtrim.utils.ExceptionHelper;
 public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     private static final int HIGHEST_START_TICK_OFFSET = 6;
 
-    private final EventHandlerContainer<CombatStateChangeListener> listeners;
+    private final EventHandlerContainer<CombatStateChangeListener, Void> listeners;
 
     private CombatPositionModel<CombatEntity> positionModel;
 
@@ -61,7 +62,7 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     public GeneralCombatModel(CombatPositionModel<CombatEntity> positionModel) {
         ExceptionHelper.checkNotNullArgument(positionModel, "positionModel");
 
-        this.listeners = new LifoEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
         this.joinPhaseRolls = new HashMap<>();
         this.maxRoll = 0;
         this.minimumHighestRoll = 0;
@@ -160,16 +161,9 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
      * {@inheritDoc }
      */
     @Override
-    public void addCombatStateChangeListener(CombatStateChangeListener listener) {
-        listeners.registerListener(listener);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void removeCombatStateChangeListener(CombatStateChangeListener listener) {
-        listeners.removeListener(listener);
+    public ListenerRef<CombatStateChangeListener> addCombatStateChangeListener(
+            CombatStateChangeListener listener) {
+        return listeners.registerListener(listener);
     }
 
     /**
@@ -276,12 +270,12 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     }
 
     private void dispatchStateChangeEvent(final CombatState newState) {
-        listeners.onEvent(new EventDispatcher<CombatStateChangeListener>() {
+        listeners.onEvent(new EventDispatcher<CombatStateChangeListener, Void>() {
             @Override
-            public void onEvent(CombatStateChangeListener eventListener) {
+            public void onEvent(CombatStateChangeListener eventListener, Void arg) {
                 eventListener.onChangeCombatState(newState);
             }
-        });
+        }, null);
     }
 
     private void setCombatState(CombatState newState) {

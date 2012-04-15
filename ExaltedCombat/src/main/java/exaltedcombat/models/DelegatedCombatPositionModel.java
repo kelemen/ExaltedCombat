@@ -2,6 +2,7 @@ package exaltedcombat.models;
 
 import java.util.List;
 import java.util.Map;
+import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -66,8 +67,9 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public void addCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        wrapped.addCombatPosListener(listener);
+    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
+            CombatPosEventListener<EntityType> listener) {
+        return wrapped.addCombatPosListener(listener);
     }
 
     /**
@@ -140,14 +142,6 @@ implements
     @Override
     public void removeAllEntities() {
         wrapped.removeAllEntities();
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void removeCombatPosListener(CombatPosEventListener<EntityType> listener) {
-        wrapped.removeCombatPosListener(listener);
     }
 
     /**
