@@ -1,8 +1,11 @@
 package exaltedcombat.undo;
 
-import java.util.*;
-
-import javax.swing.undo.*;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 
 /**
  * Defines an {@link UndoableEdit UndoableEdit} aggregating multiple

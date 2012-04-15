@@ -4,17 +4,13 @@
  */
 package exaltedcombat;
 
+import exaltedcombat.events.EventCauses;
 import exaltedcombat.events.EventManager;
 import exaltedcombat.events.GeneralEventListener;
-import exaltedcombat.events.EventCauses;
 import exaltedcombat.events.RecursionStopperEventManager;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.*;
 
 /**
  *

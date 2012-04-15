@@ -1,6 +1,6 @@
 package exaltedcombat.events;
 
-import exaltedcombat.models.impl.*;
+import exaltedcombat.models.impl.CombatEntity;
 
 /**
  * The type of the argument associated with

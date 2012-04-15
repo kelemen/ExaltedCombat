@@ -1,7 +1,7 @@
 package exaltedcombat.save;
 
-import java.nio.file.*;
-import java.util.concurrent.atomic.*;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jtrim.utils.ExceptionHelper;
 
 /**

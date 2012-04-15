@@ -1,10 +1,9 @@
 package exaltedcombat.events;
 
-import java.util.concurrent.*;
-
-import javax.swing.event.*;
-
-import org.jtrim.swing.concurrent.*;
+import java.util.concurrent.Executor;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
 
 /**
  * A simplified more convenient abstract implementation of

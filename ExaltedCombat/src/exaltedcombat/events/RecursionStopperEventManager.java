@@ -1,11 +1,16 @@
 package exaltedcombat.events;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-
-import org.jtrim.event.*;
-import org.jtrim.utils.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.jtrim.event.EventDispatcher;
+import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * An {@code EventManager} implementation which ignores

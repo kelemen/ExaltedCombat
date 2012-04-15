@@ -1,12 +1,13 @@
 package exaltedcombat.panels;
 
 import exaltedcombat.events.*;
-import exaltedcombat.models.impl.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import resources.strings.*;
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.models.impl.CombatEntityWorldModel;
+import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a Swing panel displaying the description of the selected entity.

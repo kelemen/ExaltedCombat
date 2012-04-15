@@ -1,25 +1,35 @@
 package exaltedcombat.panels;
 
-import exaltedcombat.actions.*;
-import exaltedcombat.components.*;
-import exaltedcombat.dialogs.*;
+import exaltedcombat.actions.CombatEntityAction;
+import exaltedcombat.actions.EntityJoinCombatAction;
+import exaltedcombat.components.ColoredListCell;
+import exaltedcombat.components.ColoredListCellRenderer;
+import exaltedcombat.components.UpdatableListModel;
+import exaltedcombat.dialogs.DefineNewEntityDialog;
+import exaltedcombat.dialogs.EntityStorageFrame;
+import exaltedcombat.dialogs.ExaltedDialogHelper;
 import exaltedcombat.events.*;
-import exaltedcombat.models.impl.*;
-import exaltedcombat.undo.*;
-
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.models.impl.CombatEntityWorldModel;
+import exaltedcombat.undo.AbstractEntityActionUndoableEdit;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.*;
-import java.text.*;
+import java.awt.event.KeyEvent;
+import java.text.Collator;
 import java.util.*;
-import java.util.logging.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.undo.*;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.ListModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.jtrim.utils.ExceptionHelper;
-import resources.strings.*;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a Swing panel allowing the user to organize the population of

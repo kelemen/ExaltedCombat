@@ -1,6 +1,6 @@
 package exaltedcombat.dialogs;
 
-import javax.swing.*;
+import javax.swing.JDialog;
 import org.jtrim.utils.ExceptionHelper;
 
 /**

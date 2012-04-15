@@ -1,21 +1,21 @@
 package exaltedcombat.combatmanagers;
 
-import exaltedcombat.components.*;
-import exaltedcombat.models.*;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.LayoutManager;
-import java.awt.event.*;
-import java.util.*;
-
-import javax.swing.*;
-
-import org.jtrim.concurrent.*;
-import org.jtrim.swing.concurrent.*;
-import org.jtrim.utils.*;
+import exaltedcombat.components.RelaxedFlowLayoutManager;
+import exaltedcombat.models.CombatPosEventListener;
+import exaltedcombat.models.CombatPositionModel;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import org.jtrim.concurrent.UpdateTaskExecutor;
+import org.jtrim.swing.concurrent.SwingUpdateTaskExecutor;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a swing component displaying the ticks of a tick based combat

@@ -1,6 +1,6 @@
 package exaltedcombat.save;
 
-import java.nio.file.*;
+import java.nio.file.Path;
 
 /**
  * The interface to be notified when saving the state of ExaltedCombat has been

@@ -4,10 +4,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import java.util.Objects;
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
 import org.jtrim.utils.ExceptionHelper;
 
 /**

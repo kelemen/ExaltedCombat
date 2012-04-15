@@ -2,13 +2,12 @@ package exaltedcombat.dialogs;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.*;
-
-import org.jtrim.swing.concurrent.*;
-import org.jtrim.utils.*;
-
-import resources.icons.*;
-import resources.strings.*;
+import java.util.concurrent.TimeUnit;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
+import org.jtrim.utils.ExceptionHelper;
+import resources.icons.IconStorage;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * This frame can be used to detect that the JVM has failed to shutdown and

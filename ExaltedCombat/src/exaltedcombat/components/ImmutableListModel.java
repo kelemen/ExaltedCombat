@@ -1,8 +1,7 @@
 package exaltedcombat.components;
 
 import java.util.*;
-
-import javax.swing.*;
+import javax.swing.AbstractListModel;
 
 /**
  * Defines an unmodifiable list model. The elements of this list model can

@@ -3,9 +3,8 @@ package exaltedcombat.combatmanagers;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.image.*;
-
-import javax.swing.*;
+import java.awt.image.BufferedImage;
+import javax.swing.JPanel;
 
 /**
  * A simple default implementation for the

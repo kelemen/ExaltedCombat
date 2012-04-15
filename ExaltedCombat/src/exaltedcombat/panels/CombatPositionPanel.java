@@ -1,25 +1,34 @@
 package exaltedcombat.panels;
 
-import exaltedcombat.combatmanagers.*;
-import exaltedcombat.components.*;
-import exaltedcombat.dialogs.*;
+import exaltedcombat.combatmanagers.CombatPanelCreator;
+import exaltedcombat.combatmanagers.DefaultEmptyTickPanel;
+import exaltedcombat.combatmanagers.HorizontalCombatPanel;
+import exaltedcombat.components.BorderedBorder;
+import exaltedcombat.components.JSolidPanel;
+import exaltedcombat.dialogs.ExaltedDialogHelper;
 import exaltedcombat.events.*;
-import exaltedcombat.models.*;
-import exaltedcombat.models.impl.*;
-import exaltedcombat.utils.*;
-
+import exaltedcombat.models.CombatPosEventListener;
+import exaltedcombat.models.CombatPositionModel;
+import exaltedcombat.models.DelegatedCombatPositionModel;
+import exaltedcombat.models.impl.CombatEntities;
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.utils.ExaltedConsts;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
-import java.awt.event.*;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
-
-import org.jtrim.utils.*;
-
-import resources.strings.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import org.jtrim.utils.ExceptionHelper;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a Swing panel displaying the ticks of a combat. This panel displays

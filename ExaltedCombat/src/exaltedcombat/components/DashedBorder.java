@@ -1,14 +1,8 @@
 package exaltedcombat.components;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-
-import javax.swing.border.*;
-
-import org.jtrim.utils.*;
+import java.awt.*;
+import javax.swing.border.Border;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a border with dashed lines. The dashes alternate between the colors

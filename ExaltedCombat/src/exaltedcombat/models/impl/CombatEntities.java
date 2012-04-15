@@ -1,12 +1,12 @@
 package exaltedcombat.models.impl;
 
 import exaltedcombat.models.impl.CombatEntity.UpdateListener;
-
 import java.util.*;
-
-import org.jtrim.collections.*;
-import org.jtrim.event.*;
-import org.jtrim.utils.*;
+import org.jtrim.collections.CollectionsEx;
+import org.jtrim.event.EventDispatcher;
+import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a model and implementation for a collection of combat entities in

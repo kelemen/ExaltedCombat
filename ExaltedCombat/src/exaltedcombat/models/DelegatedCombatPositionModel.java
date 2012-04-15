@@ -1,8 +1,8 @@
 package exaltedcombat.models;
 
-import java.util.*;
-
-import org.jtrim.utils.*;
+import java.util.List;
+import java.util.Map;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Forwards all its methods call to a wrapped {@link CombatPositionModel}.

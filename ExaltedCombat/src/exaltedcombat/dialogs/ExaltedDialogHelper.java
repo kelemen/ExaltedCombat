@@ -2,11 +2,10 @@ package exaltedcombat.dialogs;
 
 import java.awt.Color;
 import java.awt.Component;
-
-import javax.swing.*;
-
+import javax.swing.JOptionPane;
 import org.jtrim.utils.ExceptionHelper;
-import resources.strings.*;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Contains static utility methods for dialogs and Swing components in

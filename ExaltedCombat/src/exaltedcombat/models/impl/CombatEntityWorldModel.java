@@ -1,6 +1,6 @@
 package exaltedcombat.models.impl;
 
-import exaltedcombat.models.*;
+import exaltedcombat.models.CombatModel;
 
 /**
  * Defines the model for the "world" in ExaltedCombat. The world of

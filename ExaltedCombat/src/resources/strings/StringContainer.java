@@ -1,10 +1,12 @@
 package resources.strings;
 
-import java.text.*;
-import java.util.*;
-import java.util.logging.*;
-
-import org.jtrim.utils.*;
+import java.text.Collator;
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Provides localization support for ExaltedCombat.

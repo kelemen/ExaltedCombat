@@ -2,28 +2,41 @@ package exaltedcombat;
 
 import exaltedcombat.dialogs.*;
 import exaltedcombat.events.*;
-import exaltedcombat.models.*;
+import exaltedcombat.models.CombatPosEventListener;
+import exaltedcombat.models.CombatPositionModel;
+import exaltedcombat.models.CombatState;
+import exaltedcombat.models.CombatStateChangeListener;
 import exaltedcombat.models.impl.*;
 import exaltedcombat.panels.*;
 import exaltedcombat.save.*;
-
-import java.awt.event.*;
-import java.nio.file.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.undo.*;
-
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.jtrim.access.*;
-import org.jtrim.access.task.*;
-import org.jtrim.concurrent.*;
-import org.jtrim.swing.access.*;
-
-import resources.icons.*;
-import resources.strings.*;
+import org.jtrim.access.task.GenericRewTaskExecutor;
+import org.jtrim.access.task.RewTask;
+import org.jtrim.access.task.RewTaskExecutor;
+import org.jtrim.concurrent.ExecutorsEx;
+import org.jtrim.swing.access.SwingAccessManager;
+import org.jtrim.swing.access.SwingRight;
+import resources.icons.IconStorage;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * The main frame of ExaltedCombat. The parts of this frame and therefore most

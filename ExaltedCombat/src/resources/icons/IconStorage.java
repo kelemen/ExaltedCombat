@@ -1,9 +1,8 @@
 package resources.icons;
 
 import java.awt.Image;
-import java.net.*;
-
-import javax.imageio.*;
+import java.net.URL;
+import javax.imageio.ImageIO;
 
 /**
  * Provides static methods to load icons for ExaltedCombat.

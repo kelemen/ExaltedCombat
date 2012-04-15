@@ -3,8 +3,7 @@ package exaltedcombat.components;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
-
-import javax.swing.*;
+import javax.swing.JPanel;
 
 /**
  * Defines a panel which is completely painted with its

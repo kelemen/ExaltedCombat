@@ -1,11 +1,12 @@
 package exaltedcombat.events;
 
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.util.concurrent.locks.*;
-
-import org.jtrim.utils.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * An {@code EventManager} implementation allowing to remove all the registered
@@ -23,7 +24,7 @@ import org.jtrim.utils.*;
  *     eventManager.removeAllListeners();
  *   }
  *   eventManager = new LocalEventManager<>(newEventManager);
- *   // TODO: register events with "eventManager"
+ *   // Register events with "eventManager" ...
  * }
  * </pre>
  * <P>
@@ -170,6 +171,7 @@ public class LocalEventManager<EventType> implements EventManager<EventType> {
             this.listener = listener;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -187,6 +189,7 @@ public class LocalEventManager<EventType> implements EventManager<EventType> {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 7;
             hash = 59 * hash + Objects.hashCode(event);

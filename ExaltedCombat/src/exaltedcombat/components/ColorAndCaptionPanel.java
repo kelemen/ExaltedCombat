@@ -1,8 +1,8 @@
 package exaltedcombat.components;
 
 import java.awt.Color;
-
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * Defines a panel which contains a solid square on the left side of the panel

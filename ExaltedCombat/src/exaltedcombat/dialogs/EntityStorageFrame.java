@@ -1,24 +1,28 @@
 package exaltedcombat.dialogs;
 
-import exaltedcombat.components.*;
-import exaltedcombat.events.*;
-import exaltedcombat.models.impl.*;
-
+import exaltedcombat.components.ColoredListCell;
+import exaltedcombat.components.ColoredListCellRenderer;
+import exaltedcombat.components.ImmutableListModel;
+import exaltedcombat.events.SimpleDocChangeListener;
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.models.impl.EntityStorage;
 import java.awt.Color;
-import java.awt.event.*;
-import java.text.*;
+import java.awt.event.KeyEvent;
+import java.text.Collator;
 import java.util.*;
-import java.util.logging.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.jtrim.concurrent.*;
-import org.jtrim.swing.concurrent.*;
-import org.jtrim.utils.*;
-
-import resources.icons.*;
-import resources.strings.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.jtrim.concurrent.UpdateTaskExecutor;
+import org.jtrim.swing.concurrent.SwingUpdateTaskExecutor;
+import org.jtrim.utils.ExceptionHelper;
+import resources.icons.IconStorage;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a frame managing combat entities not currently in combat. This frame

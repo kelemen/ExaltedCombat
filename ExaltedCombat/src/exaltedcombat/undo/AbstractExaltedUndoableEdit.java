@@ -1,8 +1,9 @@
 package exaltedcombat.undo;
 
-import javax.swing.undo.*;
-
-import resources.strings.*;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.UndoableEdit;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a base class to be used for {@link UndoableEdit}s in ExaltedCombat.

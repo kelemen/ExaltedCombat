@@ -1,8 +1,10 @@
 package exaltedcombat.actions;
 
-import java.io.*;
-
-import resources.strings.*;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines the action which was taken by a combat entity to leave the combat.

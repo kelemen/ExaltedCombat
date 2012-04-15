@@ -1,12 +1,12 @@
 package exaltedcombat.save;
 
-import exaltedcombat.actions.*;
-import exaltedcombat.models.impl.*;
-
-import java.io.*;
+import exaltedcombat.actions.CombatEntityAction;
+import exaltedcombat.models.impl.CombatEntity;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.*;
-
-import org.jtrim.utils.*;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a serializable class storing the basic properties of an entity and

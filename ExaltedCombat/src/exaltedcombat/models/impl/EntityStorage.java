@@ -1,6 +1,6 @@
 package exaltedcombat.models.impl;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * Defines a storage for combat entities. This storage is a simplified

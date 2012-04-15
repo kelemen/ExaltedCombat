@@ -1,19 +1,28 @@
 package exaltedcombat.dialogs;
 
-import exaltedcombat.save.*;
-
-import java.awt.event.*;
-import java.io.*;
-import java.nio.file.*;
-import java.text.*;
-import java.util.*;
-import java.util.concurrent.*;
-
-import javax.swing.*;
-
-import org.jtrim.swing.concurrent.*;
-
-import resources.strings.*;
+import exaltedcombat.save.ExaltedSaveHelper;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a dialog which allows the user to choose a previously saved combat

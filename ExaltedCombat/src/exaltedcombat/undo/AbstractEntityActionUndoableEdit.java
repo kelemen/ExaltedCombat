@@ -1,9 +1,9 @@
 package exaltedcombat.undo;
 
-import exaltedcombat.models.impl.*;
-import exaltedcombat.actions.*;
-
-import org.jtrim.utils.*;
+import exaltedcombat.actions.CombatEntityAction;
+import exaltedcombat.models.impl.CombatEntities;
+import exaltedcombat.models.impl.CombatEntity;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a base class for {@link javax.swing.undo.UndoableEdit UndoableEdit}s

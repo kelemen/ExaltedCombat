@@ -3,17 +3,20 @@ package exaltedcombat.dialogs;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.util.logging.*;
-
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import javax.swing.*;
-
-import org.jtrim.access.*;
-import org.jtrim.swing.access.*;
-import org.jtrim.swing.concurrent.*;
-import org.jtrim.utils.*;
+import org.jtrim.access.AccessManager;
+import org.jtrim.access.AccessState;
+import org.jtrim.access.AccessStateListener;
+import org.jtrim.swing.access.SwingAccessManager;
+import org.jtrim.swing.access.SwingRight;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * An {@link AccessStateListener AccessStateListener} for

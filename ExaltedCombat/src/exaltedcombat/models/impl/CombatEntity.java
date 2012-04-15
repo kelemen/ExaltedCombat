@@ -1,12 +1,12 @@
 package exaltedcombat.models.impl;
 
-import exaltedcombat.actions.*;
-
+import exaltedcombat.actions.CombatEntityAction;
 import java.awt.Color;
 import java.util.*;
-
-import org.jtrim.event.*;
-import org.jtrim.utils.*;
+import org.jtrim.event.EventDispatcher;
+import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a model and an implementation of an entity in ExaltedCombat.

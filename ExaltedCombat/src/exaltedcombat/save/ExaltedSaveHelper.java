@@ -1,19 +1,27 @@
 package exaltedcombat.save;
 
-import exaltedcombat.models.*;
-import exaltedcombat.models.impl.*;
-import exaltedcombat.utils.*;
-
+import exaltedcombat.models.CombatModel;
+import exaltedcombat.models.CombatPositionModel;
+import exaltedcombat.models.CombatState;
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.models.impl.CombatEntityWorldModel;
+import exaltedcombat.utils.CancelableDeserializer;
 import java.io.*;
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.jtrim.access.task.*;
-import org.jtrim.utils.*;
-
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.jtrim.access.task.RewTask;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Contains static helper methods and fields to save and load a state of

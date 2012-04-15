@@ -1,12 +1,14 @@
 package exaltedcombat.utils;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.*;
-
-import java.util.concurrent.atomic.*;
-import org.jtrim.concurrent.*;
-import org.jtrim.utils.*;
+import java.util.concurrent.atomic.AtomicReference;
+import org.jtrim.concurrent.IdempotentTask;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a task which is able to load the first serialized object from a given

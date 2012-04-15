@@ -1,6 +1,8 @@
 package exaltedcombat.models;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Defines a model for the position of entities on a tick based timeline.

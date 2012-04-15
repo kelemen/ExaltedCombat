@@ -1,13 +1,9 @@
 package exaltedcombat.dialogs;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.*;
-import org.jtrim.utils.*;
+import java.awt.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a panel with a single message text in its center. The background of

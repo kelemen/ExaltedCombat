@@ -1,11 +1,12 @@
 package exaltedcombat.actions;
 
-import exaltedcombat.utils.*;
-
-import java.io.*;
-
+import exaltedcombat.utils.ExaltedConsts;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import org.jtrim.utils.ExceptionHelper;
-import resources.strings.*;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a generic action which was taken by a combat entity. In more general

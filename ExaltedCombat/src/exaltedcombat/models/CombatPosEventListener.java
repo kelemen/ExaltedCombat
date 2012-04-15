@@ -1,6 +1,6 @@
 package exaltedcombat.models;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * The interface to listen for changes in the entity position on the

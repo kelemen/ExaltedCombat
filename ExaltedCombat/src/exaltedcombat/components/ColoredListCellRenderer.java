@@ -2,9 +2,10 @@ package exaltedcombat.components;
 
 import java.awt.Color;
 import java.awt.Component;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.Border;
 import org.jtrim.utils.ExceptionHelper;
 
 /**

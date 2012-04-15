@@ -1,12 +1,12 @@
 package exaltedcombat.actions;
 
-import exaltedcombat.utils.*;
-
-import java.io.*;
-
-import org.jtrim.utils.*;
-
-import resources.strings.*;
+import exaltedcombat.utils.ExaltedConsts;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import org.jtrim.utils.ExceptionHelper;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * A convenient base class for implementing the {@link CombatEntityAction}

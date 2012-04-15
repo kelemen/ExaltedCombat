@@ -1,8 +1,7 @@
 package exaltedcombat.models.impl;
 
-import exaltedcombat.models.*;
-
-import org.jtrim.utils.*;
+import exaltedcombat.models.CombatModel;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a "world" model which composes user defined population and combat

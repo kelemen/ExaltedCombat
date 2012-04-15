@@ -1,6 +1,7 @@
 package exaltedcombat.events;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Forwards events to listeners and keeps track of which event was caused

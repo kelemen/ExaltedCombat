@@ -1,6 +1,6 @@
 package exaltedcombat.actions;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * Describes an action what an entity in Exalted combat can make.

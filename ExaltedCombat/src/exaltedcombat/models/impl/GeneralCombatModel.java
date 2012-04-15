@@ -1,11 +1,15 @@
 package exaltedcombat.models.impl;
 
 import exaltedcombat.models.*;
-import java.util.*;
-
-import org.jtrim.collections.*;
-import org.jtrim.event.*;
-import org.jtrim.utils.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.jtrim.collections.CollectionsEx;
+import org.jtrim.event.EventDispatcher;
+import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.LifoEventHandlerContainer;
+import org.jtrim.utils.ExceptionHelper;
 
 /**
  * Defines a combat model implementation with a user specified

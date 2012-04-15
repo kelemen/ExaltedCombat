@@ -1,22 +1,26 @@
 package exaltedcombat.dialogs;
 
-import exaltedcombat.events.*;
-import exaltedcombat.save.*;
-
-import java.awt.event.*;
-import java.nio.file.*;
-import java.util.concurrent.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
+import exaltedcombat.events.SimpleDocChangeListener;
+import exaltedcombat.save.ExaltedSaveHelper;
+import exaltedcombat.save.SaveDoneListener;
+import exaltedcombat.save.SaveInfo;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import javax.swing.JDialog;
+import javax.swing.event.DocumentEvent;
 import org.jtrim.access.*;
-import org.jtrim.access.task.*;
-import org.jtrim.concurrent.*;
-import org.jtrim.swing.access.*;
-import org.jtrim.utils.*;
-
-import resources.strings.*;
+import org.jtrim.access.task.GenericRewTaskExecutor;
+import org.jtrim.access.task.RewTask;
+import org.jtrim.access.task.RewTaskExecutor;
+import org.jtrim.concurrent.ExecutorsEx;
+import org.jtrim.swing.access.AutoComponentDisabler;
+import org.jtrim.swing.access.SwingAccessManager;
+import org.jtrim.swing.access.SwingRight;
+import org.jtrim.utils.ExceptionHelper;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a dialog which allows the user to save a specified combat state.

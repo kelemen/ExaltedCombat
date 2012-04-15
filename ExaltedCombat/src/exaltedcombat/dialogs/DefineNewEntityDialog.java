@@ -1,13 +1,12 @@
 package exaltedcombat.dialogs;
 
-import exaltedcombat.events.*;
-
+import exaltedcombat.events.SimpleDocChangeListener;
 import java.awt.Color;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import resources.strings.*;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.event.DocumentEvent;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a dialog which can be used to define a new combat entity for

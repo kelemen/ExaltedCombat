@@ -1,10 +1,11 @@
 package exaltedcombat.combatmanagers;
 
-import exaltedcombat.models.*;
-
+import exaltedcombat.models.CombatPosEventListener;
+import exaltedcombat.models.CombatPositionModel;
 import java.util.*;
-
-import org.jtrim.event.*;
+import org.jtrim.event.EventDispatcher;
+import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.LifoEventHandlerContainer;
 import org.jtrim.utils.ExceptionHelper;
 
 /**

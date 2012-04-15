@@ -1,8 +1,7 @@
 package exaltedcombat.components;
 
-import java.util.*;
-
-import javax.swing.*;
+import java.util.Collection;
+import javax.swing.DefaultListModel;
 
 /**
  * A subclass of {@link DefaultListModel DefaultListModel} allowing users to

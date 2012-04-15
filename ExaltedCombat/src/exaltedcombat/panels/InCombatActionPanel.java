@@ -1,20 +1,30 @@
 package exaltedcombat.panels;
 
-import exaltedcombat.actions.*;
-import exaltedcombat.dialogs.*;
+import exaltedcombat.actions.CombatEntityAction;
+import exaltedcombat.actions.EntityLeaveCombatAction;
+import exaltedcombat.actions.EntityMoveAction;
+import exaltedcombat.dialogs.ExaltedDialogHelper;
 import exaltedcombat.events.*;
-import exaltedcombat.models.*;
-import exaltedcombat.models.impl.*;
-import exaltedcombat.undo.*;
-
-import java.util.logging.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.undo.*;
-
+import exaltedcombat.models.CombatState;
+import exaltedcombat.models.impl.CombatEntity;
+import exaltedcombat.models.impl.CombatEntityWorldModel;
+import exaltedcombat.undo.AbstractEntityActionUndoableEdit;
+import exaltedcombat.undo.AbstractExaltedUndoableEdit;
+import exaltedcombat.undo.SafeCompoundEdit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
 import org.jtrim.utils.ExceptionHelper;
-import resources.strings.*;
+import resources.strings.LocalizedString;
+import resources.strings.StringContainer;
 
 /**
  * Defines a Swing panel allowing the user to manipulate entities in combat.
