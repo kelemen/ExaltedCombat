@@ -41,5 +41,13 @@
             <version>0.6</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jtrim-releases</id>
+            <url>https://github.com/kelemen/JTrim-repo/raw/master/releases/</url>
+        </repository>
+    </repositories>
+
     <name>ExaltedCombat</name>
 </project>
