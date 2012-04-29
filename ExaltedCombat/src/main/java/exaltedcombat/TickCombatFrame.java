@@ -942,8 +942,10 @@ public class TickCombatFrame extends JFrame {
             @Override
             public void onFailedSave(Throwable saveError) {
                 setCombatPath(prevPath);
-                ExaltedDialogHelper.displayError(TickCombatFrame.this,
-                        ERROR_WHILE_SAVING_CAPTION.toString(), saveError);
+                if (saveError != null) {
+                    ExaltedDialogHelper.displayError(TickCombatFrame.this,
+                            ERROR_WHILE_SAVING_CAPTION.toString(), saveError);
+                }
             }
 
             @Override
