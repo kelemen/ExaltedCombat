@@ -7,7 +7,6 @@ import exaltedcombat.save.SaveInfo;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JDialog;
 import javax.swing.event.DocumentEvent;
@@ -43,7 +42,11 @@ public class SaveCombatDialog extends JDialog {
 
     private static final LocalizedString ERROR_WHILE_SAVING_CAPTION = StringContainer.getDefaultString("ERROR_WHILE_SAVING_CAPTION");
 
-    private final AccessRequest<String, HierarchicalRight> saveRequest;
+    private static final AccessRequest<String, HierarchicalRight> SAVE_REQUEST
+            = AccessRequest.getWriteRequest(
+                "FINALIZE-SAVE",
+                HierarchicalRight.create("SAVE-RIGHT"));;
+
     private final ExecutorService backgroundExecutor;
     private final RewTaskExecutor rewExecutor;
     private final AccessManager<String, HierarchicalRight> accessManager;
@@ -78,9 +81,8 @@ public class SaveCombatDialog extends JDialog {
         this.dialogClosed = false;
         this.accepted = false;
         this.saveInfo = saveInfo;
-        this.saveRequest = AccessRequest.getWriteRequest(
-                "FINALIZE-SAVE",
-                HierarchicalRight.create("SAVE-RIGHT"));
+
+        initComponents();
 
         RightGroupHandler rightHandler = new RightGroupHandler();
         this.accessManager = new HierarchicalAccessManager<>(
@@ -89,13 +91,9 @@ public class SaveCombatDialog extends JDialog {
                 rightHandler);
         rightHandler.addGroupListener(
                 null,
-                saveRequest.getWriteRights(),
+                SAVE_REQUEST.getWriteRights(),
                 true,
                 new ComponentDisabler(jOkButton));
-
-        initComponents();
-
-
 
         getRootPane().setDefaultButton(jOkButton);
 
@@ -192,7 +190,7 @@ public class SaveCombatDialog extends JDialog {
     }
 
     private void cancelAndExit() {
-        AccessResult<String> cancelTask = accessManager.getScheduledAccess(saveRequest);
+        AccessResult<String> cancelTask = accessManager.getScheduledAccess(SAVE_REQUEST);
         cancelTask.shutdownBlockingTokensNow();
 
         cancelTask.getAccessToken().executeAndShutdown(new Runnable() {
@@ -278,9 +276,9 @@ public class SaveCombatDialog extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOkButtonActionPerformed
-        String requestID = saveRequest.getRequestID();
+        String requestID = SAVE_REQUEST.getRequestID();
         AccessToken<String> readToken = AccessTokens.createSyncToken(requestID);
-        AccessResult<String> writeAccess = accessManager.tryGetAccess(saveRequest);
+        AccessResult<String> writeAccess = accessManager.tryGetAccess(SAVE_REQUEST);
         if (!writeAccess.isAvailable()) {
             return;
         }
