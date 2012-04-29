@@ -7,6 +7,7 @@ import exaltedcombat.save.SaveInfo;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JDialog;
 import javax.swing.event.DocumentEvent;
@@ -15,9 +16,8 @@ import org.jtrim.access.task.GenericRewTaskExecutor;
 import org.jtrim.access.task.RewTask;
 import org.jtrim.access.task.RewTaskExecutor;
 import org.jtrim.concurrent.ExecutorsEx;
-import org.jtrim.swing.access.AutoComponentDisabler;
-import org.jtrim.swing.access.SwingAccessManager;
-import org.jtrim.swing.access.SwingRight;
+import org.jtrim.swing.access.ComponentDisabler;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -43,10 +43,10 @@ public class SaveCombatDialog extends JDialog {
 
     private static final LocalizedString ERROR_WHILE_SAVING_CAPTION = StringContainer.getDefaultString("ERROR_WHILE_SAVING_CAPTION");
 
-    private final AccessRequest<String, SwingRight> saveRequest;
+    private final AccessRequest<String, HierarchicalRight> saveRequest;
     private final ExecutorService backgroundExecutor;
     private final RewTaskExecutor rewExecutor;
-    private final AccessManager<String, SwingRight> accessManager;
+    private final AccessManager<String, HierarchicalRight> accessManager;
     private final SaveInfo saveInfo;
     private boolean dialogClosed;
     private boolean accepted;
@@ -74,17 +74,28 @@ public class SaveCombatDialog extends JDialog {
 
         this.backgroundExecutor = ExecutorsEx.newMultiThreadedExecutor(1, false, "SaveDlg Executor");
         this.rewExecutor = new GenericRewTaskExecutor(backgroundExecutor);
-        this.accessManager = new SwingAccessManager<>(AutoComponentDisabler.INSTANCE);
         this.savePath = null;
         this.dialogClosed = false;
         this.accepted = false;
         this.saveInfo = saveInfo;
+        this.saveRequest = AccessRequest.getWriteRequest(
+                "FINALIZE-SAVE",
+                HierarchicalRight.create("SAVE-RIGHT"));
+
+        RightGroupHandler rightHandler = new RightGroupHandler();
+        this.accessManager = new HierarchicalAccessManager<>(
+                SwingTaskExecutor.getSimpleExecutor(false),
+                SwingTaskExecutor.getStrictExecutor(false),
+                rightHandler);
+        rightHandler.addGroupListener(
+                null,
+                saveRequest.getWriteRights(),
+                true,
+                new ComponentDisabler(jOkButton));
 
         initComponents();
 
-        this.saveRequest = AccessRequest.getWriteRequest(
-                "FINALIZE-SAVE",
-                new SwingRight(jOkButton));
+
 
         getRootPane().setDefaultButton(jOkButton);
 

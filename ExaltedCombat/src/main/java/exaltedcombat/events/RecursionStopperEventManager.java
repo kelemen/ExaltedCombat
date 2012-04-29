@@ -7,9 +7,9 @@ import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
+import org.jtrim.event.CopyOnTriggerListenerManager;
 import org.jtrim.event.EventDispatcher;
-import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.ListenerManager;
 import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -44,7 +44,7 @@ implements
 
     private final ThreadLocal<EventCauses<EventType>> currentCauses;
     private final Lock registerLock;
-    private final ConcurrentMap<EventType, EventHandlerContainer<GeneralEventListener<EventType>, Void>> listeners;
+    private final ConcurrentMap<EventType, ListenerManager<GeneralEventListener<EventType>, Void>> listeners;
 
     /**
      * Creates a new event manager with a given expected different event count.
@@ -94,7 +94,7 @@ implements
     public void triggerEvent(EventType event, Object eventArg) {
         ExceptionHelper.checkNotNullArgument(event, "event");
 
-        EventHandlerContainer<GeneralEventListener<EventType>, Void> currentListeners;
+        ListenerManager<GeneralEventListener<EventType>, Void> currentListeners;
         currentListeners = listeners.get(event);
         if (currentListeners == null) {
             return;
@@ -135,10 +135,10 @@ implements
         boolean registered;
         ListenerRef<GeneralEventListener<EventType>> storingRef = null;
         do {
-            EventHandlerContainer<GeneralEventListener<EventType>, Void> currentListeners = listeners.get(event);
+            ListenerManager<GeneralEventListener<EventType>, Void> currentListeners = listeners.get(event);
             if (currentListeners == null) {
-                EventHandlerContainer<GeneralEventListener<EventType>, Void> newListeners;
-                newListeners = new CopyOnTriggerEventHandlerContainer<>();
+                ListenerManager<GeneralEventListener<EventType>, Void> newListeners;
+                newListeners = new CopyOnTriggerListenerManager<>();
                 currentListeners = listeners.putIfAbsent(event, newListeners);
                 if (currentListeners == null) {
                     currentListeners = newListeners;
@@ -161,7 +161,7 @@ implements
         }
 
         // TODO: remove the key from the map when the associated
-        //   EventHandlerContainer contains no more listeners.
+        //   ListenerManager contains no more listeners.
         return storingRef;
     }
 

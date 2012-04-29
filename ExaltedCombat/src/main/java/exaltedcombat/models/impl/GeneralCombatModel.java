@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jtrim.collections.CollectionsEx;
-import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
+import org.jtrim.event.CopyOnTriggerListenerManager;
 import org.jtrim.event.EventDispatcher;
-import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.ListenerManager;
 import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -37,7 +37,7 @@ import org.jtrim.utils.ExceptionHelper;
 public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     private static final int HIGHEST_START_TICK_OFFSET = 6;
 
-    private final EventHandlerContainer<CombatStateChangeListener, Void> listeners;
+    private final ListenerManager<CombatStateChangeListener, Void> listeners;
 
     private CombatPositionModel<CombatEntity> positionModel;
 
@@ -62,7 +62,7 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     public GeneralCombatModel(CombatPositionModel<CombatEntity> positionModel) {
         ExceptionHelper.checkNotNullArgument(positionModel, "positionModel");
 
-        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerListenerManager<>();
         this.joinPhaseRolls = new HashMap<>();
         this.maxRoll = 0;
         this.minimumHighestRoll = 0;

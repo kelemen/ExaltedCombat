@@ -3,9 +3,9 @@ package exaltedcombat.models.impl;
 import exaltedcombat.models.impl.CombatEntity.UpdateListener;
 import java.util.*;
 import org.jtrim.collections.CollectionsEx;
-import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
+import org.jtrim.event.CopyOnTriggerListenerManager;
 import org.jtrim.event.EventDispatcher;
-import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.ListenerManager;
 import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -83,8 +83,8 @@ public final class CombatEntities {
     private final Map<CombatEntity, ListenerRef<?>> entities;
     private CombatEntity selected;
 
-    private final EventHandlerContainer<UpdateListener, Void> updateListeners;
-    private final EventHandlerContainer<ChangeListener, Void> changeListeners;
+    private final ListenerManager<UpdateListener, Void> updateListeners;
+    private final ListenerManager<ChangeListener, Void> changeListeners;
     private final EventDispatcher<ChangeListener, Void> changedEntitiesDispatcher;
     private final UpdateListener entityUpdateListener;
 
@@ -101,8 +101,8 @@ public final class CombatEntities {
      *   is a negative integer
      */
     public CombatEntities(int expectedEntityCount) {
-        this.updateListeners = new CopyOnTriggerEventHandlerContainer<>();
-        this.changeListeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.updateListeners = new CopyOnTriggerListenerManager<>();
+        this.changeListeners = new CopyOnTriggerListenerManager<>();
         this.entities = CollectionsEx.newHashMap(expectedEntityCount);
         this.selected = null;
 

@@ -3,9 +3,9 @@ package exaltedcombat.models.impl;
 import exaltedcombat.actions.CombatEntityAction;
 import java.awt.Color;
 import java.util.*;
-import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
+import org.jtrim.event.CopyOnTriggerListenerManager;
 import org.jtrim.event.EventDispatcher;
-import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.ListenerManager;
 import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -102,7 +102,7 @@ public final class CombatEntity {
         public void onChangedPreviousAction(CombatEntity entity);
     }
 
-    private final EventHandlerContainer<UpdateListener, CombatEntity> listeners;
+    private final ListenerManager<UpdateListener, CombatEntity> listeners;
     private String shortName;
     private Color color;
     private String description;
@@ -174,7 +174,7 @@ public final class CombatEntity {
         ExceptionHelper.checkNotNullArgument(color, "color");
         ExceptionHelper.checkNotNullArgument(description, "description");
 
-        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerListenerManager<>();
         this.shortName = shortName;
         this.color = color;
         this.description = description;

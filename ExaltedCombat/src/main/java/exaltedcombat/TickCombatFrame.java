@@ -9,8 +9,8 @@ import exaltedcombat.models.CombatStateChangeListener;
 import exaltedcombat.models.impl.*;
 import exaltedcombat.panels.*;
 import exaltedcombat.save.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.Component;
+import java.awt.event.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -19,10 +19,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.undo.CannotUndoException;
@@ -32,8 +29,10 @@ import org.jtrim.access.task.GenericRewTaskExecutor;
 import org.jtrim.access.task.RewTask;
 import org.jtrim.access.task.RewTaskExecutor;
 import org.jtrim.concurrent.ExecutorsEx;
-import org.jtrim.swing.access.SwingAccessManager;
-import org.jtrim.swing.access.SwingRight;
+import org.jtrim.swing.access.ComponentDecorator;
+import org.jtrim.swing.access.DecoratorPanelFactory;
+import org.jtrim.swing.access.DelayedDecorator;
+import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import resources.icons.IconStorage;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -85,12 +84,24 @@ public class TickCombatFrame extends JFrame {
 
     private static final LocalizedString LOADING_IN_PROGRESS_CAPTION = StringContainer.getDefaultString("LOADING_IN_PROGRESS_CAPTION");
     private static final LocalizedString SAVING_IN_PROGRESS_CAPTION = StringContainer.getDefaultString("SAVING_IN_PROGRESS_CAPTION");
+    private static final LocalizedString BACKGROUND_TASK_IN_PROGRESS_CAPTION = StringContainer.getDefaultString("BACKGROUND_TASK_IN_PROGRESS_CAPTION");
 
     private static final LocalizedString ERROR_WHILE_SAVING_CAPTION = StringContainer.getDefaultString("ERROR_WHILE_SAVING_CAPTION");
     private static final LocalizedString ERROR_WHILE_LOADING_CAPTION = StringContainer.getDefaultString("ERROR_WHILE_LOADING_CAPTION");
 
-    private static final TaskID SAVETASK_ID = new TaskID("SAVE");
-    private static final TaskID LOADTASK_ID = new TaskID("LOAD");
+    private static final TaskID SAVETASK_ID = new TaskID("SAVE", SAVING_IN_PROGRESS_CAPTION.toString());
+    private static final TaskID LOADTASK_ID = new TaskID("LOAD", LOADING_IN_PROGRESS_CAPTION.toString());
+
+    private static final HierarchicalRight BACKROUND_TASK_RIGHT
+            = HierarchicalRight.create(RootRight.BACKGROUND_TASK);
+
+    private static final AccessRequest<TaskID, HierarchicalRight> SAVE_REQUEST =
+            AccessRequest.getWriteRequest(SAVETASK_ID,
+            BACKROUND_TASK_RIGHT.createSubRight(BackgrounTaskRight.SAVING));
+
+    private static final AccessRequest<TaskID, HierarchicalRight> LOAD_REQUEST =
+            AccessRequest.getWriteRequest(LOADTASK_ID,
+            BACKROUND_TASK_RIGHT.createSubRight(BackgrounTaskRight.LOADING));
 
     private final EventManager<ExaltedEvent> eventManager;
     private final CombatEntityWorldModel worldModel;
@@ -109,11 +120,9 @@ public class TickCombatFrame extends JFrame {
 
     private final UndoManager undoManager;
 
-    private final AccessRequest<TaskID, SwingRight> saveRequest;
-    private final AccessRequest<TaskID, SwingRight> loadRequest;
     private final ExecutorService backgroundExecutor;
     private final RewTaskExecutor rewExecutor;
-    private final AccessManager<TaskID, SwingRight> accessManager;
+    private final AccessManager<TaskID, HierarchicalRight> accessManager;
 
     /**
      * The future controlling the outstanding combat loading process.
@@ -127,18 +136,49 @@ public class TickCombatFrame extends JFrame {
      * world.
      */
     public TickCombatFrame() {
-        this.saveRequest = AccessRequest.getWriteRequest(SAVETASK_ID,
-                new SwingRight(this, new TaskDescriptor(SAVING_IN_PROGRESS_CAPTION)));
-
-        this.loadRequest = AccessRequest.getWriteRequest(LOADTASK_ID,
-                new SwingRight(this, new TaskDescriptor(LOADING_IN_PROGRESS_CAPTION)));
-
         this.backgroundExecutor = ExecutorsEx.newMultiThreadedExecutor(1, false, "ExaltedCombat Executor");
         this.rewExecutor = new GenericRewTaskExecutor(backgroundExecutor);
 
-        AutoComponentBlocker autoFrameBlocker = new AutoComponentBlocker(this);
-        this.accessManager = new SwingAccessManager<>(autoFrameBlocker);
-        autoFrameBlocker.setAccessManager(accessManager);
+        RightGroupHandler rightHandler = new RightGroupHandler();
+        this.accessManager = new HierarchicalAccessManager<>(
+                SwingTaskExecutor.getSimpleExecutor(false),
+                SwingTaskExecutor.getStrictExecutor(false),
+                rightHandler);
+
+        DecoratorPanelFactory blockingPanelFactory = new DecoratorPanelFactory() {
+            @Override
+            public JPanel createPanel(Component decorated, AccessManager<?, HierarchicalRight> accessManager) {
+                BlockingMessagePanel result = new BlockingMessagePanel();
+                result.addMouseListener(new MouseAdapter() {});
+                result.addMouseMotionListener(new MouseMotionAdapter() {});
+                result.addMouseWheelListener(new MouseAdapter() {});
+                result.addKeyListener(new KeyAdapter() {});
+
+                // This cast is obviously safe and required only because Java
+                // does not handle nested generic types well.
+                @SuppressWarnings("unchecked")
+                Collection<AccessToken<?>> blockingTokens
+                        = (Collection<AccessToken<?>>)accessManager.getBlockingTokens(
+                            Collections.<HierarchicalRight>emptySet(),
+                            Collections.<HierarchicalRight>singleton(BACKROUND_TASK_RIGHT));
+                if (!blockingTokens.isEmpty()) {
+                    // Only display the message of the first blocking task.
+                    result.setMessage(blockingTokens.iterator().next().getAccessID().toString());
+                }
+                else {
+                    result.setMessage(BACKGROUND_TASK_IN_PROGRESS_CAPTION.toString());
+                }
+                return result;
+            }
+        };
+        ComponentDecorator decorator = new ComponentDecorator(
+                this,
+                new DelayedDecorator(blockingPanelFactory, 200, TimeUnit.MILLISECONDS));
+        rightHandler.addGroupListener(
+                null,
+                Collections.singleton(BACKROUND_TASK_RIGHT),
+                false,
+                decorator);
 
         this.undoManager = new UndoManager();
         this.definitionsModified = false;
@@ -441,9 +481,9 @@ public class TickCombatFrame extends JFrame {
                 storeFrame.getStoredEntities());
 
         if (currentCombatPath != null) {
-            TaskID requestID = saveRequest.getRequestID();
+            TaskID requestID = SAVE_REQUEST.getRequestID();
             AccessToken<?> readToken = AccessTokens.createSyncToken(requestID);
-            AccessResult<?> writeAccess = accessManager.tryGetAccess(saveRequest);
+            AccessResult<?> writeAccess = accessManager.tryGetAccess(SAVE_REQUEST);
             if (!writeAccess.isAvailable()) {
                 return false;
             }
@@ -577,9 +617,9 @@ public class TickCombatFrame extends JFrame {
             }
         };
 
-        TaskID requestID = loadRequest.getRequestID();
+        TaskID requestID = LOAD_REQUEST.getRequestID();
         AccessToken<?> readToken = AccessTokens.createSyncToken(requestID);
-        AccessResult<?> writeAccess = accessManager.tryGetAccess(loadRequest);
+        AccessResult<?> writeAccess = accessManager.tryGetAccess(LOAD_REQUEST);
         if (!writeAccess.isAvailable()) {
             return;
         }
@@ -701,34 +741,36 @@ public class TickCombatFrame extends JFrame {
      */
     private static class TaskID {
         private final String name;
+        private final String inProgressText;
 
-        public TaskID(String name) {
+        public TaskID(String name, String inProgressText) {
             assert name != null;
+            assert inProgressText != null;
+
             this.name = name;
+            this.inProgressText = inProgressText;
+        }
+
+        public String getInProgressText() {
+            return inProgressText;
+        }
+
+        public String getName() {
+            return name;
         }
 
         @Override
         public String toString() {
-            return name;
+            return inProgressText;
         }
     }
 
-    /**
-     * Defines the message that should be displayed while the associated
-     * asynchronous task is active.
-     */
-    private static class TaskDescriptor {
-        private final String message;
+    private enum RootRight {
+        BACKGROUND_TASK
+    }
 
-        public TaskDescriptor(LocalizedString message) {
-            assert message != null;
-            this.message = message.toString();
-        }
-
-        @Override
-        public String toString() {
-            return message;
-        }
+    private enum BackgrounTaskRight {
+        SAVING, LOADING
     }
 
     /** This method is called from within the constructor to

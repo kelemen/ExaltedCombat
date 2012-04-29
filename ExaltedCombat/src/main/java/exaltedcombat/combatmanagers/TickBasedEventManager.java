@@ -3,9 +3,9 @@ package exaltedcombat.combatmanagers;
 import exaltedcombat.models.CombatPosEventListener;
 import exaltedcombat.models.CombatPositionModel;
 import java.util.*;
-import org.jtrim.event.CopyOnTriggerEventHandlerContainer;
+import org.jtrim.event.CopyOnTriggerListenerManager;
 import org.jtrim.event.EventDispatcher;
-import org.jtrim.event.EventHandlerContainer;
+import org.jtrim.event.ListenerManager;
 import org.jtrim.event.ListenerRef;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -45,7 +45,7 @@ implements
     private final Map<EntityType, Integer> timeTable;
     private final SortedMap<Integer, List<EntityType>> ticks;
 
-    private final EventHandlerContainer<CombatPosEventListener<EntityType>, Void> listeners;
+    private final ListenerManager<CombatPosEventListener<EntityType>, Void> listeners;
 
     private int currentTick;
 
@@ -56,7 +56,7 @@ implements
     public TickBasedEventManager() {
         this.timeTable = new HashMap<>();
         this.ticks = new TreeMap<>();
-        this.listeners = new CopyOnTriggerEventHandlerContainer<>();
+        this.listeners = new CopyOnTriggerListenerManager<>();
         this.currentTick = 0;
     }
 
