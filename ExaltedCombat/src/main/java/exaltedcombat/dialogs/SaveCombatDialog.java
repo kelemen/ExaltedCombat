@@ -97,12 +97,14 @@ public class SaveCombatDialog extends JDialog {
 
         getRootPane().setDefaultButton(jOkButton);
 
+        final CombatNameEditChecker nameEditChecker = new CombatNameEditChecker();
         jCombatNameEdit.getDocument().addDocumentListener(new SimpleDocChangeListener() {
             @Override
             protected void onChange(DocumentEvent e) {
-                checkEnableState();
+                nameEditChecker.check();
             }
         });
+        nameEditChecker.check();
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -115,10 +117,6 @@ public class SaveCombatDialog extends JDialog {
                 backgroundExecutor.shutdown();
             }
         });
-    }
-
-    private void checkEnableState() {
-        jOkButton.setEnabled(!getCombatName().isEmpty());
     }
 
     /**
@@ -160,7 +158,6 @@ public class SaveCombatDialog extends JDialog {
         ExceptionHelper.checkNotNullArgument(combatName, "combatName");
 
         jCombatNameEdit.setText(combatName);
-        checkEnableState();
     }
 
     /**
@@ -210,6 +207,20 @@ public class SaveCombatDialog extends JDialog {
         }
     }
 
+    private class CombatNameEditChecker {
+        private final RequestGrabber grabber = new RequestGrabber(
+                accessManager, SAVE_REQUEST);
+
+        public void check() {
+            if (getCombatName().isEmpty()) {
+                grabber.acquire();
+            }
+            else {
+                grabber.release();
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -228,7 +239,6 @@ public class SaveCombatDialog extends JDialog {
         setTitle("Save Exalted Combat");
 
         jOkButton.setText("Save");
-        jOkButton.setEnabled(false);
         jOkButton.setPreferredSize(new java.awt.Dimension(75, 23));
         jOkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
