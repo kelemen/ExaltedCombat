@@ -3,6 +3,7 @@ package exaltedcombat;
 import exaltedcombat.dialogs.*;
 import exaltedcombat.events.EntitySelectChangeArgs;
 import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.RecursionStopperEventTracker;
 import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.CombatPosEventListener;
 import exaltedcombat.models.CombatPositionModel;
@@ -189,8 +190,7 @@ public class TickCombatFrame extends JFrame {
         this.undoManager = new UndoManager();
         this.definitionsModified = false;
         this.currentCombatPath = null;
-        // TODO: make it recursion stopper.
-        this.eventTracker = new LinkedEventTracker();
+        this.eventTracker = new RecursionStopperEventTracker(new LinkedEventTracker());
         this.currentLoadFuture = null;
 
         initComponents();
