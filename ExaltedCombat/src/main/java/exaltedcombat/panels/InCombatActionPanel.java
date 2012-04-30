@@ -11,6 +11,7 @@ import exaltedcombat.models.impl.CombatEntityWorldModel;
 import exaltedcombat.undo.AbstractEntityActionUndoableEdit;
 import exaltedcombat.undo.AbstractExaltedUndoableEdit;
 import exaltedcombat.undo.SafeCompoundEdit;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -22,6 +23,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+import org.jtrim.event.*;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -43,9 +45,9 @@ import resources.strings.StringContainer;
  *   information needs to be retrieved.
  *  </li>
  *  <li>
- *   {@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}:
- *   Sets the event manager which will notify this panel of the changes in the
- *   world of ExaltedCombat. The events fired by this event manager must be
+ *   {@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}:
+ *   Sets the event tracker which will notify this panel of the changes in the
+ *   world of ExaltedCombat. The events fired by this event tracker must be
  *   consistent with the world model.
  *  </li>
  *  <li>
@@ -75,7 +77,7 @@ public class InCombatActionPanel extends JPanel {
     private static final LocalizedString LEAVE_COMBAT_EDIT_TEXT = StringContainer.getDefaultString("LEAVE_COMBAT_EDIT_TEXT");
 
     private CombatEntityWorldModel worldModel;
-    private LocalEventManager<ExaltedEvent> eventManager;
+    private LocalEventTracker eventTracker;
     private UndoManager undoManager;
 
     /**
@@ -84,13 +86,13 @@ public class InCombatActionPanel extends JPanel {
      * methods:
      * <ul>
      *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
-     *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+     *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
      *  <li>{@link #setUndoManager(UndoManager) setUndoManager(UndoManager)}</li>
      * </ul>
      */
     public InCombatActionPanel() {
         this.worldModel = null;
-        this.eventManager = null;
+        this.eventTracker = null;
         this.undoManager = null;
 
         initComponents();
@@ -130,7 +132,7 @@ public class InCombatActionPanel extends JPanel {
      * event listeners with the given model and will use the model only to
      * retrieve information and modify it (e.g.: remove an entity from combat).
      * Instead it will use events received from the
-     * {@link #setEventManager(exaltedcombat.events.EventManager) event manager}.
+     * {@link #setEventTracker(EventTracker) event tracker}.
      * <P>
      * This panel will only use the specified model from the AWT event
      * dispatching thread.
@@ -149,60 +151,71 @@ public class InCombatActionPanel extends JPanel {
     }
 
     /**
-     * Sets the event manager from which this panel will be notified of changes
-     * in the "world" of ExaltedCombat. The events fired by this event manager
+     * Sets the event tracker from which this panel will be notified of changes
+     * in the "world" of ExaltedCombat. The events fired by this event tracker
      * must be consistent with the
      * {@link #setWorldModel(CombatEntityWorldModel) world model}.
      *
-     * @param eventManager the event manager from which this panel will be
+     * @param eventTracker the event tracker from which this panel will be
      *   notified of changes. This argument cannot be {@code null}.
      *
-     * @throws NullPointerException thrown if the specified event manager is
+     * @throws NullPointerException thrown if the specified event tracker is
      *   {@code null}
      */
-    public void setEventManager(EventManager<ExaltedEvent> eventManager) {
-        ExceptionHelper.checkNotNullArgument(eventManager, "eventManager");
+    public void setEventTracker(EventTracker eventTracker) {
+        ExceptionHelper.checkNotNullArgument(eventTracker, "eventTracker");
 
-        if (this.eventManager != null) {
-            this.eventManager.removeAllListeners();
+        if (this.eventTracker != null) {
+            this.eventTracker.removeAllListeners();
         }
 
-        this.eventManager = new LocalEventManager<>(eventManager);
-        registerEventManager();
+        this.eventTracker = new LocalEventTracker(eventTracker);
+        registerEventTracker();
     }
 
-    private void registerEventManager() {
-        eventManager.registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
-            @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                EntitySelectChangeArgs changeArgs = (EntitySelectChangeArgs)eventArg;
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
 
+    private <ArgType> void triggerEvent(
+            ExaltedEvent<ArgType> eventKind,
+            ArgType eventArgument) {
+        ExaltedEvent.Helper.triggerEvent(eventTracker, eventKind, eventArgument);
+    }
+
+    private void registerEventTracker() {
+        registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new TrackedEventListener<EntitySelectChangeArgs>() {
+            @Override
+            public void onEvent(TrackedEvent<EntitySelectChangeArgs> trackedEvent) {
                 stopListeningEntityPropertyEdits();
                 try {
-                    onChangeSelection(causes, changeArgs.getNewSelection());
+                    onChangeSelection(
+                            trackedEvent.getCauses(),
+                            trackedEvent.getEventArg().getNewSelection());
                 } finally {
                     startListeningEntityPropertyEdits();
                 }
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_ENTER_COMBAT, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_ENTER_COMBAT, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 updateEnableState();
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITIES_LEAVE_COMBAT, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITIES_LEAVE_COMBAT, new TrackedEventListener<Collection<?>>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<Collection<?>> trackedEvent) {
                 updateEnableState();
             }
         });
 
-        eventManager.registerListener(ControlEvent.NAME_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(ControlEvent.NAME_CHANGE, new TrackedEventListener<DocumentEvent>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<DocumentEvent> trackedEvent) {
                 CombatEntity selected = getSelectedEntity();
                 if (selected == null) {
                     return;
@@ -242,13 +255,13 @@ public class InCombatActionPanel extends JPanel {
         jCurrentActionText.setEnabled(inCombat);
     }
 
-    private void updateNameText(EventCauses<ExaltedEvent> causes, String text) {
-        if (causes == null || !causes.isIndirectCause(ControlEvent.NAME_CHANGE)) {
+    private void updateNameText(EventCauses causes, String text) {
+        if (causes == null || !causes.isCausedByKind(ControlEvent.NAME_CHANGE)) {
             jEntityNameEdit.setText(text);
         }
     }
 
-    private void onChangeSelection(EventCauses<ExaltedEvent> causes, CombatEntity selected) {
+    private void onChangeSelection(EventCauses causes, CombatEntity selected) {
         updateNameText(causes, selected != null ? selected.getShortName() : "");
         jCurrentActionText.setText("");
 
@@ -271,8 +284,7 @@ public class InCombatActionPanel extends JPanel {
             entityNameEditListener = new SimpleDocChangeListener() {
                 @Override
                 protected void onChange(DocumentEvent e) {
-                    eventManager.triggerEvent(
-                            ControlEvent.NAME_CHANGE, e);
+                    triggerEvent(ControlEvent.NAME_CHANGE, e);
                 }
             };
         }
@@ -437,8 +449,9 @@ public class InCombatActionPanel extends JPanel {
         }
     }
 
-    private enum ControlEvent implements ExaltedEvent {
-        NAME_CHANGE
+    private static class ControlEvent {
+        public static final ExaltedEvent<DocumentEvent> NAME_CHANGE
+                = ExaltedEvent.Helper.createExaltedEvent(DocumentEvent.class);
     }
 
     /** This method is called from within the constructor to

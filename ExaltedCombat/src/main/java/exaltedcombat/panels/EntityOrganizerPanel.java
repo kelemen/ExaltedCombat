@@ -8,7 +8,9 @@ import exaltedcombat.components.UpdatableListModel;
 import exaltedcombat.dialogs.DefineNewEntityDialog;
 import exaltedcombat.dialogs.EntityStorageFrame;
 import exaltedcombat.dialogs.ExaltedDialogHelper;
-import exaltedcombat.events.*;
+import exaltedcombat.events.EntitySelectChangeArgs;
+import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.impl.CombatEntity;
 import exaltedcombat.models.impl.CombatEntityWorldModel;
 import exaltedcombat.undo.AbstractEntityActionUndoableEdit;
@@ -27,6 +29,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import org.jtrim.event.EventTracker;
+import org.jtrim.event.LocalEventTracker;
+import org.jtrim.event.TrackedEvent;
+import org.jtrim.event.TrackedEventListener;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -50,9 +56,9 @@ import resources.strings.StringContainer;
  *   information needs to be retrieved.
  *  </li>
  *  <li>
- *   {@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}:
- *   Sets the event manager which will notify this panel of the changes in the
- *   world of ExaltedCombat. The events fired by this event manager must be
+ *   {@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}:
+ *   Sets the event tracker which will notify this panel of the changes in the
+ *   world of ExaltedCombat. The events fired by this event tracker must be
  *   consistent with the world model.
  *  </li>
  *  <li>
@@ -89,7 +95,7 @@ public class EntityOrganizerPanel extends JPanel {
     private final Comparator<EntityListElement> listElementComparator;
     private EntityStorageFrame storeFrame;
     private CombatEntityWorldModel worldModel;
-    private LocalEventManager<ExaltedEvent> eventManager;
+    private LocalEventTracker eventTracker;
     private UndoManager undoManager;
 
     /**
@@ -97,14 +103,14 @@ public class EntityOrganizerPanel extends JPanel {
      * instance don't forget to initialize it by calling these methods:
      * <ul>
      *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
-     *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+     *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
      *  <li>{@link #setUndoManager(UndoManager) setUndoManager(UndoManager)}</li>
      *  <li>{@link #setStoreFrame(EntityStorageFrame) setStoreFrame(EntityStorageFrame)}</li>
      * </ul>
      */
     public EntityOrganizerPanel() {
         this.worldModel = null;
-        this.eventManager = null;
+        this.eventTracker = null;
         this.undoManager = null;
         this.storeFrame = null;
         this.listElementComparator = new ListElementComparator();
@@ -141,7 +147,7 @@ public class EntityOrganizerPanel extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    eventManager.triggerEvent(ControlEvent.LIST_SELECT_CHANGE, e);
+                    triggerEvent(ControlEvent.LIST_SELECT_CHANGE, e);
                 }
             }
         });
@@ -167,7 +173,7 @@ public class EntityOrganizerPanel extends JPanel {
      * event listeners with the given model and will use the model only to
      * retrieve information and modify it (e.g.: add new entities to the
      * population). Instead it will use events received from the
-     * {@link #setEventManager(exaltedcombat.events.EventManager) event manager}.
+     * {@link #setEventTracker(EventTracker) event tracker}.
      * <P>
      * This panel will only use the specified model from the AWT event
      * dispatching thread.
@@ -186,77 +192,87 @@ public class EntityOrganizerPanel extends JPanel {
     }
 
     /**
-     * Sets the event manager from which this panel will be notified of changes
-     * in the "world" of ExaltedCombat. The events fired by this event manager
+     * Sets the event tracker from which this panel will be notified of changes
+     * in the "world" of ExaltedCombat. The events fired by this event tracker
      * must be consistent with the
      * {@link #setWorldModel(CombatEntityWorldModel) world model}.
      *
-     * @param eventManager the event manager from which this panel will be
+     * @param eventTracker the event tracker from which this panel will be
      *   notified of changes. This argument cannot be {@code null}.
      *
-     * @throws NullPointerException thrown if the specified event manager is
+     * @throws NullPointerException thrown if the specified event tracker is
      *   {@code null}
      */
-    public void setEventManager(EventManager<ExaltedEvent> eventManager) {
-        ExceptionHelper.checkNotNullArgument(eventManager, "eventManager");
+    public void setEventTracker(EventTracker eventTracker) {
+        ExceptionHelper.checkNotNullArgument(eventTracker, "eventTracker");
 
-        if (this.eventManager != null) {
-            this.eventManager.removeAllListeners();
+        if (this.eventTracker != null) {
+            this.eventTracker.removeAllListeners();
         }
 
-        this.eventManager = new LocalEventManager<>(eventManager);
-        registerEventManager();
+        this.eventTracker = new LocalEventTracker(eventTracker);
+        registerEventTracker();
     }
 
-    private void registerEventManager() {
-        eventManager.registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
+
+    private <ArgType> void triggerEvent(
+            ExaltedEvent<ArgType> eventKind,
+            ArgType eventArgument) {
+        ExaltedEvent.Helper.triggerEvent(eventTracker, eventKind, eventArgument);
+    }
+
+    private void registerEventTracker() {
+        registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new TrackedEventListener<EntitySelectChangeArgs>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                EntitySelectChangeArgs changeArgs = (EntitySelectChangeArgs)eventArg;
-                onChangeSelection(changeArgs.getNewSelection());
+            public void onEvent(TrackedEvent<EntitySelectChangeArgs> trackedEvent) {
+                onChangeSelection(trackedEvent.getEventArg().getNewSelection());
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_ENTER_COMBAT, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_ENTER_COMBAT, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 updateEnableState();
                 updateEntityList();
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITIES_LEAVE_COMBAT, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITIES_LEAVE_COMBAT, new TrackedEventListener<Collection<?>>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<Collection<?>> trackedEvent) {
                 updateEnableState();
                 updateEntityList();
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_COLOR_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_COLOR_CHANGE, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 redrawEntityListLines();
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_NAME_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_NAME_CHANGE, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 updateEntityList();
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_LIST_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_LIST_CHANGE, new TrackedEventListener<Void>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<Void> trackedEvent) {
                 updateEntityList();
             }
         });
 
-        eventManager.registerListener(ControlEvent.LIST_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(ControlEvent.LIST_SELECT_CHANGE, new TrackedEventListener<ListSelectionEvent>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<ListSelectionEvent> trackedEvent) {
                 if (worldModel == null) {
                     return;
                 }
@@ -495,8 +511,9 @@ public class EntityOrganizerPanel extends JPanel {
         }
     }
 
-    private enum ControlEvent implements ExaltedEvent {
-        LIST_SELECT_CHANGE
+    private static class ControlEvent {
+        public static final ExaltedEvent<ListSelectionEvent> LIST_SELECT_CHANGE
+                = ExaltedEvent.Helper.createExaltedEvent(ListSelectionEvent.class);
     }
 
     /** This method is called from within the constructor to

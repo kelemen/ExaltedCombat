@@ -1,7 +1,9 @@
 package exaltedcombat;
 
 import exaltedcombat.dialogs.*;
-import exaltedcombat.events.*;
+import exaltedcombat.events.EntitySelectChangeArgs;
+import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.CombatPosEventListener;
 import exaltedcombat.models.CombatPositionModel;
 import exaltedcombat.models.CombatState;
@@ -29,6 +31,10 @@ import org.jtrim.access.task.GenericRewTaskExecutor;
 import org.jtrim.access.task.RewTask;
 import org.jtrim.access.task.RewTaskExecutor;
 import org.jtrim.concurrent.ExecutorsEx;
+import org.jtrim.event.EventTracker;
+import org.jtrim.event.LinkedEventTracker;
+import org.jtrim.event.TrackedEvent;
+import org.jtrim.event.TrackedEventListener;
 import org.jtrim.swing.access.ComponentDecorator;
 import org.jtrim.swing.access.DecoratorPanelFactory;
 import org.jtrim.swing.access.DelayedDecorator;
@@ -42,7 +48,7 @@ import resources.strings.StringContainer;
  * of the code can be found in the panels of the {@code exaltedcombat.panels}
  * package. Currently the code creates the model of the
  * {@link CombatEntityWorldModel world model}, the
- * {@link EventManager event manager}, the {@link UndoManager undo manager} and
+ * {@link EventTracker event tracker}, the {@link UndoManager undo manager} and
  * connects the frame using them.
  * <P>
  * Unless otherwise noted the methods of this class must be called on the AWT
@@ -103,7 +109,7 @@ public class TickCombatFrame extends JFrame {
             AccessRequest.getWriteRequest(LOADTASK_ID,
             BACKROUND_TASK_RIGHT.createSubRight(BackgrounTaskRight.LOADING));
 
-    private final EventManager<ExaltedEvent> eventManager;
+    private final EventTracker eventTracker;
     private final CombatEntityWorldModel worldModel;
     private final GeneralCombatModel combatModel; // equals to worldModel.getCombatModel()
 
@@ -183,7 +189,8 @@ public class TickCombatFrame extends JFrame {
         this.undoManager = new UndoManager();
         this.definitionsModified = false;
         this.currentCombatPath = null;
-        this.eventManager = new RecursionStopperEventManager<>(100);
+        // TODO: make it recursion stopper.
+        this.eventTracker = new LinkedEventTracker();
         this.currentLoadFuture = null;
 
         initComponents();
@@ -234,21 +241,21 @@ public class TickCombatFrame extends JFrame {
 
         registerWorldEvents();
 
-        actionDisplayPanel.setEventManager(eventManager);
+        actionDisplayPanel.setEventTracker(eventTracker);
         actionDisplayPanel.setWorldModel(worldModel);
 
-        posPanel.setEventManager(eventManager);
+        posPanel.setEventTracker(eventTracker);
         posPanel.setPopulationModel(worldModel.getPopulationModel());
 
-        entityDescriptionPanel.setEventManager(eventManager);
+        entityDescriptionPanel.setEventTracker(eventTracker);
         entityDescriptionPanel.setWorldModel(worldModel);
 
-        entityOrganizerPanel.setEventManager(eventManager);
+        entityOrganizerPanel.setEventTracker(eventTracker);
         entityOrganizerPanel.setWorldModel(worldModel);
         entityOrganizerPanel.setStoreFrame(storeFrame);
         entityOrganizerPanel.setUndoManager(undoManager);
 
-        inCombatActionPanel.setEventManager(eventManager);
+        inCombatActionPanel.setEventTracker(eventTracker);
         inCombatActionPanel.setWorldModel(worldModel);
         inCombatActionPanel.setUndoManager(undoManager);
 
@@ -349,52 +356,93 @@ public class TickCombatFrame extends JFrame {
             }
         });
 
-        GeneralEventListener<ExaltedEvent> setModifiedHandler = new GeneralEventListener<ExaltedEvent>() {
+        ExaltedEvent.Helper.register(eventTracker, WorldEvent.ENTITY_NAME_CHANGE,
+                new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 setModified();
             }
-        };
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_NAME_CHANGE, setModifiedHandler);
+        ExaltedEvent.Helper.register(eventTracker, WorldEvent.ENTITY_COLOR_CHANGE,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_COLOR_CHANGE, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_DESCRIPTION_CHANGE,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_DESCRIPTION_CHANGE, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_PREV_ACTION_CHANGE,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_PREV_ACTION_CHANGE, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_LIST_CHANGE,
+                new TrackedEventListener<Void>() {
+            @Override
+            public void onEvent(TrackedEvent<Void> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_LIST_CHANGE, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_MOVE_IN_COMBAT,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_MOVE_IN_COMBAT, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_MOVE_IN_COMBAT,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_ENTER_COMBAT, setModifiedHandler);
+        registerListener(WorldEvent.ENTITY_ENTER_COMBAT,
+                new TrackedEventListener<CombatEntity>() {
+            @Override
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITIES_LEAVE_COMBAT, setModifiedHandler);
+        registerListener(WorldEvent.ENTITIES_LEAVE_COMBAT,
+                new TrackedEventListener<Collection<?>>() {
+            @Override
+            public void onEvent(TrackedEvent<Collection<?>> trackedEvent) {
+                setModified();
+            }
+        });
 
-        eventManager.registerListener(
-                WorldEvent.ENTITY_COMBAT_PHASE_CHANGE, new GeneralEventListener<ExaltedEvent>(){
-                    @Override
-                    public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                        updateTitle();
-                    }
-                });
+        registerListener(WorldEvent.ENTITY_COMBAT_PHASE_CHANGE,
+                new TrackedEventListener<Void>() {
+            @Override
+            public void onEvent(TrackedEvent<Void> trackedEvent) {
+                updateTitle();
+            }
+        });
 
-        eventManager.registerListener(
-                FrameEvent.PATH_CHANGED, new GeneralEventListener<ExaltedEvent>(){
-                    @Override
-                    public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                        updateTitle();
-                    }
-                });
+        registerListener(FrameEvent.PATH_CHANGED,
+                new TrackedEventListener<Void>() {
+            @Override
+            public void onEvent(TrackedEvent<Void> trackedEvent) {
+                updateTitle();
+            }
+        });
     }
 
     private void setModified() {
@@ -409,9 +457,20 @@ public class TickCombatFrame extends JFrame {
         return definitionsModified;
     }
 
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
+
+    private <ArgType> void triggerEvent(
+            ExaltedEvent<ArgType> eventKind,
+            ArgType eventArgument) {
+        ExaltedEvent.Helper.triggerEvent(eventTracker, eventKind, eventArgument);
+    }
+
     private void setCombatPath(Path combatPath) {
         this.currentCombatPath = combatPath;
-        eventManager.triggerEvent(FrameEvent.PATH_CHANGED, null);
+        triggerEvent(FrameEvent.PATH_CHANGED, null);
     }
 
     private void updateTitle() {
@@ -658,7 +717,8 @@ public class TickCombatFrame extends JFrame {
         combatModel.addCombatStateChangeListener(new CombatStateChangeListener() {
             @Override
             public void onChangeCombatState(CombatState state) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_COMBAT_PHASE_CHANGE, null);
+                ExaltedEvent.Helper.triggerEvent(eventTracker,
+                        WorldEvent.ENTITY_COMBAT_PHASE_CHANGE, null);
             }
         });
 
@@ -666,17 +726,17 @@ public class TickCombatFrame extends JFrame {
         positionModel.addCombatPosListener(new CombatPosEventListener<CombatEntity>(){
             @Override
             public void enterCombat(CombatEntity entity, int tick) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_ENTER_COMBAT, entity);
+                triggerEvent(WorldEvent.ENTITY_ENTER_COMBAT, entity);
             }
 
             @Override
             public void leaveCombat(Collection<? extends CombatEntity> entities) {
-                eventManager.triggerEvent(WorldEvent.ENTITIES_LEAVE_COMBAT, entities);
+                triggerEvent(WorldEvent.ENTITIES_LEAVE_COMBAT, entities);
             }
 
             @Override
             public void move(CombatEntity entity, int srcTick, int destTick) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_MOVE_IN_COMBAT, entity);
+                triggerEvent(WorldEvent.ENTITY_MOVE_IN_COMBAT, entity);
             }
         });
 
@@ -684,34 +744,34 @@ public class TickCombatFrame extends JFrame {
         populationModel.addUpdateListener(new CombatEntity.UpdateListener() {
             @Override
             public void onChangedShortName(CombatEntity entity) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_NAME_CHANGE, entity);
+                triggerEvent(WorldEvent.ENTITY_NAME_CHANGE, entity);
             }
 
             @Override
             public void onChangedColor(CombatEntity entity) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_COLOR_CHANGE, entity);
+                triggerEvent(WorldEvent.ENTITY_COLOR_CHANGE, entity);
             }
 
             @Override
             public void onChangedDescription(CombatEntity entity) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_DESCRIPTION_CHANGE, entity);
+                triggerEvent(WorldEvent.ENTITY_DESCRIPTION_CHANGE, entity);
             }
 
             @Override
             public void onChangedPreviousAction(CombatEntity entity) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_PREV_ACTION_CHANGE, entity);
+                triggerEvent(WorldEvent.ENTITY_PREV_ACTION_CHANGE, entity);
             }
         });
         populationModel.addChangeListener(new CombatEntities.ChangeListener() {
             @Override
             public void onChangedSelection(CombatEntity prevSelected, CombatEntity newSelected) {
-                eventManager.triggerEvent(WorldEvent.ENTITY_SELECT_CHANGE,
+                triggerEvent(WorldEvent.ENTITY_SELECT_CHANGE,
                         new EntitySelectChangeArgs(prevSelected, newSelected));
             }
 
             @Override
             public void onChangedEntities() {
-                eventManager.triggerEvent(WorldEvent.ENTITY_LIST_CHANGE, null);
+                triggerEvent(WorldEvent.ENTITY_LIST_CHANGE, null);
             }
         });
     }
@@ -732,8 +792,9 @@ public class TickCombatFrame extends JFrame {
         worldModel.getPopulationModel().addEntities(newEntities);
     }
 
-    private enum FrameEvent implements ExaltedEvent {
-        PATH_CHANGED
+    private static class FrameEvent {
+        public static final ExaltedEvent<Void> PATH_CHANGED
+                = ExaltedEvent.Helper.createExaltedEvent(Void.class);
     }
 
     /**

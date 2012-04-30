@@ -6,7 +6,9 @@ import exaltedcombat.combatmanagers.HorizontalCombatPanel;
 import exaltedcombat.components.BorderedBorder;
 import exaltedcombat.components.JSolidPanel;
 import exaltedcombat.dialogs.ExaltedDialogHelper;
-import exaltedcombat.events.*;
+import exaltedcombat.events.EntitySelectChangeArgs;
+import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.CombatPosEventListener;
 import exaltedcombat.models.CombatPositionModel;
 import exaltedcombat.models.DelegatedCombatPositionModel;
@@ -26,6 +28,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
+import org.jtrim.event.EventTracker;
+import org.jtrim.event.LocalEventTracker;
+import org.jtrim.event.TrackedEvent;
+import org.jtrim.event.TrackedEventListener;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -36,12 +42,12 @@ import resources.strings.StringContainer;
  * each other.
  * <P>
  * This implementation needs a {@link CombatEntities population model}
- * to allow selecting an entity and an {@link EventManager event manager} to
+ * to allow selecting an entity and an {@link EventTracker event tracker} to
  * detect changes made to the model. Therefore every instance of this class
  * needs to be initialized after creating by calling the following methods:
  * <ul>
  *  <li>{@link #setPopulationModel(CombatEntities) setPopulationModel(CombatEntities)}</li>
- *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+ *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
  * </ul>
  * Forgetting to call these methods and displaying this panel may cause
  * unchecked exceptions to be thrown. The methods can be called in any order.
@@ -66,7 +72,7 @@ public class CombatPositionPanel extends JPanel {
     private final Border highlightedBorder;
     private final Border unselectedBorder;
 
-    private LocalEventManager<ExaltedEvent> eventManager;
+    private LocalEventTracker eventTracker;
     private CombatEntities populationModel;
 
     /**
@@ -74,7 +80,7 @@ public class CombatPositionPanel extends JPanel {
      * instance don't forget to initialize it by calling these methods:
      * <ul>
      *  <li>{@link #setPopulationModel(CombatEntities) setPopulationModel(CombatEntities)}</li>
-     *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+     *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
      * </ul>
      */
     public CombatPositionPanel() {
@@ -86,7 +92,7 @@ public class CombatPositionPanel extends JPanel {
         this.unselectedBorder = BorderFactory.createEmptyBorder(
                 borderSize, borderSize, borderSize, borderSize);
         this.jCombatPanel = new HorizontalCombatPanel<>();
-        this.eventManager = null;
+        this.eventTracker = null;
         this.populationModel = null;
 
         initComponents();
@@ -98,7 +104,7 @@ public class CombatPositionPanel extends JPanel {
      * register event listeners with the given model and will use the model only
      * to retrieve information and modify it. Instead it will use events
      * received from the
-     * {@link #setEventManager(exaltedcombat.events.EventManager) event manager}.
+     * {@link #setEventTracker(EventTracker) event tracker}.
      * <P>
      * This panel will only use the specified model from the AWT event
      * dispatching thread.
@@ -198,33 +204,44 @@ public class CombatPositionPanel extends JPanel {
     }
 
     /**
-     * Sets the event manager from which this panel will be notified of changes
+     * Sets the event tracker from which this panel will be notified of changes
      * in the population of ExaltedCombat. The events fired by this event
-     * manager must be consistent with the
+     * tracker must be consistent with the
      * {@link #setPopulationModel(CombatEntities) population model}.
      *
-     * @param eventManager the event manager from which this panel will be
+     * @param eventTracker the event tracker from which this panel will be
      *   notified of changes. This argument cannot be {@code null}.
      *
-     * @throws NullPointerException thrown if the specified event manager is
+     * @throws NullPointerException thrown if the specified event tracker is
      *   {@code null}
      */
-    public void setEventManager(EventManager<ExaltedEvent> eventManager) {
-        ExceptionHelper.checkNotNullArgument(eventManager, "eventManager");
+    public void setEventTracker(EventTracker eventTracker) {
+        ExceptionHelper.checkNotNullArgument(eventTracker, "eventTracker");
 
-        if (this.eventManager != null) {
-            this.eventManager.removeAllListeners();
+        if (this.eventTracker != null) {
+            this.eventTracker.removeAllListeners();
         }
 
-        this.eventManager = new LocalEventManager<>(eventManager);
-        registerEventManager();
+        this.eventTracker = new LocalEventTracker(eventTracker);
+        registerEventTracker();
     }
 
-    private void registerEventManager() {
-        eventManager.registerListener(WorldEvent.ENTITY_COLOR_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
+
+    private <ArgType> void triggerEvent(
+            ExaltedEvent<ArgType> eventKind,
+            ArgType eventArgument) {
+        ExaltedEvent.Helper.triggerEvent(eventTracker, eventKind, eventArgument);
+    }
+
+    private void registerEventTracker() {
+        registerListener(WorldEvent.ENTITY_COLOR_CHANGE, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                CombatEntity entity = (CombatEntity)eventArg;
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                CombatEntity entity = trackedEvent.getEventArg();
                 EntityPanel panel = getPanelOfEntity(entity);
                 if (panel != null) {
                     panel.setEntityColor(entity.getColor());
@@ -232,10 +249,10 @@ public class CombatPositionPanel extends JPanel {
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_NAME_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_NAME_CHANGE, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                CombatEntity entity = (CombatEntity)eventArg;
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                CombatEntity entity = trackedEvent.getEventArg();
                 EntityPanel panel = getPanelOfEntity(entity);
                 if (panel != null) {
                     panel.setShortName(entity.getShortName());
@@ -243,22 +260,21 @@ public class CombatPositionPanel extends JPanel {
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new TrackedEventListener<EntitySelectChangeArgs>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                EntitySelectChangeArgs changeArgs = (EntitySelectChangeArgs)eventArg;
+            public void onEvent(TrackedEvent<EntitySelectChangeArgs> trackedEvent) {
+                EntitySelectChangeArgs changeArgs = trackedEvent.getEventArg();
 
                 setSelectionOfPanel(changeArgs.getOldSelection());
                 setSelectionOfPanel(changeArgs.getNewSelection());
             }
         });
 
-        eventManager.registerListener(PositionPanelEvent.ENTITYPANEL_SELECTED, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(PositionPanelEvent.ENTITYPANEL_SELECTED, new TrackedEventListener<CombatEntity>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                CombatEntity entity = (CombatEntity)eventArg;
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
                 if (populationModel != null) {
-                    populationModel.setSelection(entity);
+                    populationModel.setSelection(trackedEvent.getEventArg());
                 }
             }
         });
@@ -316,9 +332,7 @@ public class CombatPositionPanel extends JPanel {
                 setBorder();
 
                 if (select) {
-                    eventManager.triggerEvent(
-                            PositionPanelEvent.ENTITYPANEL_SELECTED,
-                            getEntity());
+                    triggerEvent(PositionPanelEvent.ENTITYPANEL_SELECTED, getEntity());
                 }
             }
         }
@@ -361,8 +375,9 @@ public class CombatPositionPanel extends JPanel {
         }
     }
 
-    private enum PositionPanelEvent implements ExaltedEvent {
-        ENTITYPANEL_SELECTED // Arg: CombatEntity
+    private static class PositionPanelEvent {
+        public static final ExaltedEvent<CombatEntity> ENTITYPANEL_SELECTED
+                = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
     }
 
     /** This method is called from within the constructor to

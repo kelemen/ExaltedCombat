@@ -1,13 +1,17 @@
 package exaltedcombat.events;
 
+import exaltedcombat.models.impl.CombatEntity;
+import java.util.Collection;
+
 /**
  * The possible general events which can occur in ExaltedCombat. The arguments
  * these events expect are documented in the documentation of their respective
- * instance.
+ * instance which is the same as the one returned by their {@code getArgClass()}
+ * method.
  *
  * @author Kelemen Attila
  */
-public enum WorldEvent implements ExaltedEvent {
+public final class WorldEvent {
     /**
      * The event occurs when the
      * {@link exaltedcombat.models.impl.CombatEntity#getShortName() name}
@@ -20,7 +24,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@code null}. The argument is the combat entity whose name has been
      * changed.
      */
-    ENTITY_NAME_CHANGE,
+    public static final ExaltedEvent<CombatEntity> ENTITY_NAME_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when the
@@ -34,7 +39,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@code null}. The argument is the combat entity whose color has been
      * changed.
      */
-    ENTITY_COLOR_CHANGE,
+    public static final ExaltedEvent<CombatEntity> ENTITY_COLOR_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when the
@@ -48,7 +54,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@code null}. The argument is the combat entity whose description has
      * been changed.
      */
-    ENTITY_DESCRIPTION_CHANGE,
+    public static final ExaltedEvent<CombatEntity> ENTITY_DESCRIPTION_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when the
@@ -62,7 +69,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@code null}. The argument is the combat entity whose history of actions
      * have been changed.
      */
-    ENTITY_PREV_ACTION_CHANGE,
+    public static final ExaltedEvent<CombatEntity> ENTITY_PREV_ACTION_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when a new entity was selected. Only a single combat
@@ -73,7 +81,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@link EntitySelectChangeArgs} and cannot be {@code null}. The argument
      * contains both the previously and newly selected entities.
      */
-    ENTITY_SELECT_CHANGE,
+    public static final ExaltedEvent<EntitySelectChangeArgs> ENTITY_SELECT_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(EntitySelectChangeArgs.class);
 
     /**
      * The event occurs when the list of entities in ExaltedCombat changes.
@@ -82,9 +91,10 @@ public enum WorldEvent implements ExaltedEvent {
      * when multiple entities enter or leave the world of ExaltedCombat, so the
      * whole list of entities must be checked.
      * <P>
-     * The argument for this event is undefined and can be {@code null}.
+     * The argument for this event is {@code Void}.
      */
-    ENTITY_LIST_CHANGE,
+    public static final ExaltedEvent<Void> ENTITY_LIST_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(Void.class);
 
     /**
      * The event occurs when an entity of ExaltedCombat joins a combat. When
@@ -94,7 +104,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@link exaltedcombat.models.impl.CombatEntity CombatEntity} and cannot be
      * {@code null}. The argument is the combat entity who joined a combat.
      */
-    ENTITY_ENTER_COMBAT,
+    public static final ExaltedEvent<CombatEntity> ENTITY_ENTER_COMBAT
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when an entity of ExaltedCombat takes an action in a
@@ -104,7 +115,8 @@ public enum WorldEvent implements ExaltedEvent {
      * {@link exaltedcombat.models.impl.CombatEntity CombatEntity} and cannot be
      * {@code null}. The argument is the combat entity who acted in a combat.
      */
-    ENTITY_MOVE_IN_COMBAT,
+    public static final ExaltedEvent<CombatEntity> ENTITY_MOVE_IN_COMBAT
+            = ExaltedEvent.Helper.createExaltedEvent(CombatEntity.class);
 
     /**
      * The event occurs when some entities of ExaltedCombat leave a combat.
@@ -114,7 +126,9 @@ public enum WorldEvent implements ExaltedEvent {
      * {@code null} or empty. The argument is the collection of entities leaving
      * the combat.
      */
-    ENTITIES_LEAVE_COMBAT,
+    @SuppressWarnings("unchecked") // Obviously, the below cast cannot fail.
+    public static final ExaltedEvent<Collection<?>> ENTITIES_LEAVE_COMBAT
+            = ExaltedEvent.Helper.createExaltedEvent((Class<Collection<?>>)(Class<?>)Collection.class);
 
     /**
      * The event occurs when the phase of a combat in ExaltedCombat changes.
@@ -127,7 +141,8 @@ public enum WorldEvent implements ExaltedEvent {
      * will not yet act. The second phase of the combat is when the combat
      * really starts and entities start taking their actions.
      * <P>
-     * The argument for this event is undefined and can be {@code null}.
+     * The argument for this event is {@code Void}.
      */
-    ENTITY_COMBAT_PHASE_CHANGE
+    public static final ExaltedEvent<Void> ENTITY_COMBAT_PHASE_CHANGE
+            = ExaltedEvent.Helper.createExaltedEvent(Void.class);
 }

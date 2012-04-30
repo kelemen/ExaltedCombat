@@ -1,6 +1,6 @@
 /**
  * Contains the panels of the main frame of ExaltedCombat. These panels can
- * be connected by {@link exaltedcombat.events.EventManager event managers},
+ * be connected by {@link org.jtrim.event.EventTracker event trackers},
  * models and {@link javax.swing.undo.UndoManager undo managers}.
  * <P>
  * Note that these panels are not necessary to be displayed on a single frame

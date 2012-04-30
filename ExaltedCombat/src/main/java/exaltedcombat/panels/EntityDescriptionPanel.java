@@ -1,11 +1,15 @@
 package exaltedcombat.panels;
 
-import exaltedcombat.events.*;
+import exaltedcombat.events.EntitySelectChangeArgs;
+import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.SimpleDocChangeListener;
+import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.impl.CombatEntity;
 import exaltedcombat.models.impl.CombatEntityWorldModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jtrim.event.*;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
 
@@ -13,12 +17,12 @@ import resources.strings.StringContainer;
  * Defines a Swing panel displaying the description of the selected entity.
  * This implementation needs a {@link CombatEntityWorldModel world model} to
  * check which entity is currently selected and an
- * {@link EventManager event manager} to detect changes made to the model.
+ * {@link EventTracker event tracker} to detect changes made to the model.
  * Therefore every instance of this class needs to be initialized after creating
  * by calling the following methods:
  * <ul>
  *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
- *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+ *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
  * </ul>
  * Forgetting to call these methods and displaying this panel may cause
  * unchecked exceptions to be thrown. The methods can be called in any order.
@@ -34,19 +38,19 @@ public class EntityDescriptionPanel extends JPanel {
     private static final LocalizedString ENTITY_DESCRIPTION_CAPTION = StringContainer.getDefaultString("ENTITY_DESCRIPTION_CAPTION");
 
     private CombatEntityWorldModel worldModel;
-    private LocalEventManager<ExaltedEvent> eventManager;
+    private LocalEventTracker eventTracker;
 
     /**
      * Creates a new panel without displaying any description. After creating
      * this instance don't forget to initialize it by calling these methods:
      * <ul>
      *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
-     *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+     *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
      * </ul>
      */
     public EntityDescriptionPanel() {
         this.worldModel = null;
-        this.eventManager = null;
+        this.eventTracker = null;
 
         initComponents();
         setComponentProperties();
@@ -62,7 +66,7 @@ public class EntityDescriptionPanel extends JPanel {
      * Sets the world model to use by this panel. This panel will not register
      * event listeners with the given model and will use the model only to
      * retrieve information. Instead it will use events received from the
-     * {@link #setEventManager(exaltedcombat.events.EventManager) event manager}.
+     * {@link #setEventTracker(EventTracker) event tracker}.
      * <P>
      * This panel will only use the specified model from the AWT event
      * dispatching thread.
@@ -79,44 +83,55 @@ public class EntityDescriptionPanel extends JPanel {
     }
 
     /**
-     * Sets the event manager from which this panel will be notified of changes
-     * in the "world" of ExaltedCombat. The events fired by this event manager
+     * Sets the event tracker from which this panel will be notified of changes
+     * in the "world" of ExaltedCombat. The events fired by this event tracker
      * must be consistent with the
      * {@link #setWorldModel(CombatEntityWorldModel) world model}.
      *
-     * @param eventManager the event manager from which this panel will be
+     * @param eventTracker the event tracker from which this panel will be
      *   notified of changes. This argument cannot be {@code null}.
      *
-     * @throws NullPointerException thrown if the specified event manager is
+     * @throws NullPointerException thrown if the specified event tracker is
      *   {@code null}
      */
-    public void setEventManager(EventManager<ExaltedEvent> eventManager) {
-        if (this.eventManager != null) {
-            this.eventManager.removeAllListeners();
+    public void setEventTracker(EventTracker eventTracker) {
+        if (this.eventTracker != null) {
+            this.eventTracker.removeAllListeners();
         }
 
-        this.eventManager = new LocalEventManager<>(eventManager);
-        registerEventManager();
+        this.eventTracker = new LocalEventTracker(eventTracker);
+        registerEventTracker();
     }
 
-    private void registerEventManager() {
-        eventManager.registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
-            @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                EntitySelectChangeArgs changeArgs = (EntitySelectChangeArgs)eventArg;
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
 
+    private <ArgType> void triggerEvent(
+            ExaltedEvent<ArgType> eventKind,
+            ArgType eventArgument) {
+        ExaltedEvent.Helper.triggerEvent(eventTracker, eventKind, eventArgument);
+    }
+
+    private void registerEventTracker() {
+        registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new TrackedEventListener<EntitySelectChangeArgs>() {
+            @Override
+            public void onEvent(TrackedEvent<EntitySelectChangeArgs> trackedEvent) {
                 stopListeningEntityPropertyEdits();
                 try {
-                    onChangeSelection(causes, changeArgs.getNewSelection());
+                    onChangeSelection(
+                            trackedEvent.getCauses(),
+                            trackedEvent.getEventArg().getNewSelection());
                 } finally {
                     startListeningEntityPropertyEdits();
                 }
             }
         });
 
-        eventManager.registerListener(ControlEvent.DESCRIPTION_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(ControlEvent.DESCRIPTION_CHANGE, new TrackedEventListener<DocumentEvent>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
+            public void onEvent(TrackedEvent<DocumentEvent> trackedEvent) {
                 CombatEntity selected = getSelectedEntity();
                 if (selected == null) {
                     return;
@@ -134,8 +149,7 @@ public class EntityDescriptionPanel extends JPanel {
             entityDescrEditListener = new SimpleDocChangeListener() {
                 @Override
                 protected void onChange(DocumentEvent e) {
-                    eventManager.triggerEvent(
-                            ControlEvent.DESCRIPTION_CHANGE, e);
+                    triggerEvent(ControlEvent.DESCRIPTION_CHANGE, e);
                 }
             };
         }
@@ -152,8 +166,8 @@ public class EntityDescriptionPanel extends JPanel {
         }
     }
 
-    private void updateDescrText(EventCauses<ExaltedEvent> causes, String text) {
-        if (causes == null || !causes.isIndirectCause(ControlEvent.DESCRIPTION_CHANGE)) {
+    private void updateDescrText(EventCauses causes, String text) {
+        if (causes == null || !causes.isCausedByKind(ControlEvent.DESCRIPTION_CHANGE)) {
             jDescriptionText.setText(text);
         }
     }
@@ -162,7 +176,7 @@ public class EntityDescriptionPanel extends JPanel {
         jDescriptionText.setEnabled(getSelectedEntity() != null);
     }
 
-    private void onChangeSelection(EventCauses<ExaltedEvent> causes, CombatEntity selected) {
+    private void onChangeSelection(EventCauses causes, CombatEntity selected) {
         updateDescrText(causes, selected != null ? selected.getDescription() : "");
         updateEnableState();
     }
@@ -173,8 +187,9 @@ public class EntityDescriptionPanel extends JPanel {
                 : null;
     }
 
-    private enum ControlEvent implements ExaltedEvent {
-        DESCRIPTION_CHANGE
+    private static class ControlEvent {
+        public static final ExaltedEvent<DocumentEvent> DESCRIPTION_CHANGE
+                = ExaltedEvent.Helper.createExaltedEvent(DocumentEvent.class);
     }
 
     /** This method is called from within the constructor to

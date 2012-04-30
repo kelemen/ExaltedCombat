@@ -6,18 +6,18 @@
  * Every entity is allowed to join a combat without restriction. The class
  * defining the entity is {@link exaltedcombat.models.impl.CombatEntity CombatEntity}.
  *
- * <h3>Models and the Event Manager</h3>
+ * <h3>Models and the Event Tracker</h3>
  * ExaltedCombat uses backing models to store the information and displays
  * this model. Since modifications to the model can scattered through the code
  * models can notify users through listeners. However to avoid possible infinite
  * loops when modifying the model only the main frame registers listeners with
  * the model directly and those registered listeners only forward the events to
- * an {@link exaltedcombat.events.EventManager event manager}.
+ * an {@link org.jtrim.event.EventTracker event tracker}.
  * <P>
- * The event manager is used to actually track which event caused which event,
+ * The event tracker is used to actually track which event caused which event,
  * so using it makes avoiding infinite loop in events relatively easy.
  * <P>
- * There is only a single instance of the event manager and there is also a
+ * There is only a single instance of the event tracker and there is also a
  * single {@link exaltedcombat.models.impl.CombatEntityWorldModel world model}.
  * These are created in the main frame of ExaltedCombat.
  *
@@ -34,7 +34,7 @@
  * The main frame completely relies panels found in the
  * {@code exaltedcombat.panels} package and without them it is only an empty
  * frame with a menu bar. These panels are connected by the models and the event
- * manager.
+ * tracker.
  *
  * <h3>Saving the state</h3>
  * The state of ExaltedCombat can be stored in a single serializable object:

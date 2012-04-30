@@ -2,7 +2,9 @@ package exaltedcombat.panels;
 
 import exaltedcombat.actions.CombatEntityAction;
 import exaltedcombat.components.ImmutableListModel;
-import exaltedcombat.events.*;
+import exaltedcombat.events.EntitySelectChangeArgs;
+import exaltedcombat.events.ExaltedEvent;
+import exaltedcombat.events.WorldEvent;
 import exaltedcombat.models.impl.CombatEntity;
 import exaltedcombat.models.impl.CombatEntityWorldModel;
 import exaltedcombat.utils.ExaltedConsts;
@@ -10,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jtrim.event.EventTracker;
+import org.jtrim.event.LocalEventTracker;
+import org.jtrim.event.TrackedEvent;
+import org.jtrim.event.TrackedEventListener;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -18,12 +24,12 @@ import resources.strings.StringContainer;
  * Defines a Swing panel displaying the action history of the selected entity.
  * This implementation needs a {@link CombatEntityWorldModel world model} to
  * check which entity is currently selected and an
- * {@link EventManager event manager} to detect changes made to the model.
+ * {@link EventTracker event tracker} to detect changes made to the model.
  * Therefore every instance of this class needs to be initialized after creating
  * by calling the following methods:
  * <ul>
  *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
- *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+ *  <li>{@link #setEventTracker(EventTracker) EventTracker(EventTracker)}</li>
  * </ul>
  * Forgetting to call these methods and displaying this panel may cause
  * unchecked exceptions to be thrown. The methods can be called in any order.
@@ -40,7 +46,7 @@ public class ActionDisplayPanel extends javax.swing.JPanel {
     private static final LocalizedString PREV_ACTION_LIST_CAPTION = StringContainer.getDefaultString("PREV_ACTION_LIST_CAPTION");
     private static final LocalizedString SELECTED_ACTION_CAPTION = StringContainer.getDefaultString("SELECTED_ACTION_CAPTION");
 
-    private LocalEventManager<ExaltedEvent> eventManager;
+    private LocalEventTracker eventTracker;
     private CombatEntity selectedEntity;
 
     /**
@@ -48,11 +54,11 @@ public class ActionDisplayPanel extends javax.swing.JPanel {
      * instance don't forget to initialize it by calling these methods:
      * <ul>
      *  <li>{@link #setWorldModel(CombatEntityWorldModel) setWorldModel(CombatEntityWorldModel)}</li>
-     *  <li>{@link #setEventManager(exaltedcombat.events.EventManager) setEventManager(EventManager)}</li>
+     *  <li>{@link #setEventTracker(EventTracker) setEventTracker(EventTracker)}</li>
      * </ul>
      */
     public ActionDisplayPanel() {
-        this.eventManager = null;
+        this.eventTracker = null;
         this.selectedEntity = null;
 
         initComponents();
@@ -63,7 +69,7 @@ public class ActionDisplayPanel extends javax.swing.JPanel {
      * Sets the world model to use by this panel. This panel will not register
      * event listeners with the given model and will use the model only to
      * retrieve information. Instead it will use events received from the
-     * {@link #setEventManager(exaltedcombat.events.EventManager) event manager}.
+     * {@link #setEventTracker(EventTracker) event tracker}.
      * <P>
      * This panel will only use the specified model from the AWT event
      * dispatching thread.
@@ -135,41 +141,46 @@ public class ActionDisplayPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Sets the event manager from which this panel will be notified of changes
-     * in the "world" of ExaltedCombat. The events fired by this event manager
+     * Sets the event tracker from which this panel will be notified of changes
+     * in the "world" of ExaltedCombat. The events fired by this event tracker
      * must be consistent with the
      * {@link #setWorldModel(CombatEntityWorldModel) world model}.
      *
-     * @param eventManager the event manager from which this panel will be
+     * @param eventTracker the event tracker from which this panel will be
      *   notified of changes. This argument cannot be {@code null}.
      *
-     * @throws NullPointerException thrown if the specified event manager is
+     * @throws NullPointerException thrown if the specified event tracker is
      *   {@code null}
      */
-    public void setEventManager(EventManager<ExaltedEvent> eventManager) {
-        ExceptionHelper.checkNotNullArgument(eventManager, "eventManager");
+    public void setEventTracker(EventTracker eventTracker) {
+        ExceptionHelper.checkNotNullArgument(eventTracker, "eventTracker");
 
-        if (this.eventManager != null) {
-            this.eventManager.removeAllListeners();
+        if (this.eventTracker != null) {
+            this.eventTracker.removeAllListeners();
         }
 
-        this.eventManager = new LocalEventManager<>(eventManager);
-        registerEventManager();
+        this.eventTracker = new LocalEventTracker(eventTracker);
+        registerEventTracker();
     }
 
-    private void registerEventManager() {
-        eventManager.registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+    private <ArgType> void registerListener(ExaltedEvent<ArgType> eventKind,
+                TrackedEventListener<ArgType> eventListener) {
+        ExaltedEvent.Helper.register(eventTracker, eventKind, eventListener);
+    }
+
+    private void registerEventTracker() {
+        registerListener(WorldEvent.ENTITY_SELECT_CHANGE, new TrackedEventListener<EntitySelectChangeArgs>() {
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                EntitySelectChangeArgs changeArgs = (EntitySelectChangeArgs)eventArg;
-                updateList(changeArgs.getNewSelection());
+            public void onEvent(TrackedEvent<EntitySelectChangeArgs> trackedEvent) {
+                updateList(trackedEvent.getEventArg().getNewSelection());
             }
         });
 
-        eventManager.registerListener(WorldEvent.ENTITY_PREV_ACTION_CHANGE, new GeneralEventListener<ExaltedEvent>() {
+        registerListener(WorldEvent.ENTITY_PREV_ACTION_CHANGE, new TrackedEventListener<CombatEntity>() {
+
             @Override
-            public void onEvent(EventCauses<ExaltedEvent> causes, Object eventArg) {
-                if (eventArg == selectedEntity) {
+            public void onEvent(TrackedEvent<CombatEntity> trackedEvent) {
+                if (trackedEvent.getEventArg() == selectedEntity) {
                     updateList(selectedEntity);
                 }
             }

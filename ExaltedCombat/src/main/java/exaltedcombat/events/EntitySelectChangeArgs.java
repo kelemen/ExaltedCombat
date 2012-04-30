@@ -12,7 +12,6 @@ import exaltedcombat.models.impl.CombatEntity;
  * transparent to any synchronization. Note however that the referenced combat
  * entities are not thread-safe, see {@link CombatEntity} for reference.
  *
- * @see EventManager
  * @see WorldEvent#ENTITY_SELECT_CHANGE
  * @author Kelemen Attila
  */
