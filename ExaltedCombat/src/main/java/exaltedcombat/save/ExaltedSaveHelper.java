@@ -5,23 +5,27 @@ import exaltedcombat.models.CombatPositionModel;
 import exaltedcombat.models.CombatState;
 import exaltedcombat.models.impl.CombatEntity;
 import exaltedcombat.models.impl.CombatEntityWorldModel;
-import exaltedcombat.utils.CancelableDeserializer;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static java.nio.file.StandardOpenOption.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.jtrim.access.task.RewTask;
+import org.jtrim.concurrent.SyncTaskExecutor;
+import org.jtrim.concurrent.TaskExecutor;
+import org.jtrim.concurrent.async.AsyncDataLink;
+import org.jtrim.concurrent.async.AsyncLinks;
+import org.jtrim.concurrent.async.DataConverter;
+import org.jtrim.concurrent.async.io.AsyncChannelLink;
+import org.jtrim.concurrent.async.io.DeserializerChannelProcessor;
+import org.jtrim.concurrent.async.io.FileChannelOpener;
+import org.jtrim.swing.concurrent.BackgroundTask;
 import org.jtrim.utils.ExceptionHelper;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * Contains static helper methods and fields to save and load a state of
@@ -152,14 +156,14 @@ public final class ExaltedSaveHelper {
     }
 
     /**
-     * Creates a {@link RewTask REW} (Read, Evaluate, Write) task which when
-     * executed will save a specified state of ExaltedCombat given a name of a
-     * combat. The file storing the state will be saved to the
-     * {@link #SAVE_HOME} directory. The completion of the task can be detected
-     * by a user specified listener.
+     * Creates a {@code BackgroundTask} which when executed will save a
+     * specified state of ExaltedCombat given a name of a combat. The file
+     * storing the state will be saved to the {@link #SAVE_HOME} directory.
+     * The completion of the task can be detected by a user specified listener.
      * <P>
      * The task will notify the listener in the context of its
-     * {@link org.jtrim.access.AccessToken write token}.
+     * {@code SwingReporter} which is executes task in the context of the
+     * access token if executed by a {@code BackgroundTaskExecutor}.
      * <P>
      * Saved states can later be retrieved by a task returned by the
      * {@link #createLoadRewTask(Path, LoadDoneListener)} method.
@@ -177,16 +181,16 @@ public final class ExaltedSaveHelper {
      * @param doneListener the listener to be notified when the returned task
      *   had been executed and has terminated. This argument cannot be
      *   {@code null}
-     * @return the {@link RewTask REW} (Read, Evaluate, Write) task which when
-     *   executed will save a specified state of ExaltedCombat. This method
-     *   never returns {@code null}.
+     * @return the {@code BackgroundTask} which when executed will save a
+     *   specified state of ExaltedCombat. This method never returns
+     *   {@code null}.
      *
      * @throws NullPointerException thrown if {@code combatName}
      *   or {@code saveInfo} or {@code doneListener} is {@code null}
      *
      * @see IdempotentSaveListener
      */
-    public static RewTask<?, ?> createSaveRewTask(String combatName,
+    public static BackgroundTask createSaveRewTask(String combatName,
             SaveInfo saveInfo,
             boolean mayOverwrite,
             SaveDoneListener doneListener) {
@@ -194,12 +198,13 @@ public final class ExaltedSaveHelper {
     }
 
     /**
-     * Creates a {@link RewTask REW} (Read, Evaluate, Write) task which when
-     * executed will save a specified state of ExaltedCombat to a given file.
-     * The completion of the task can be detected by a user specified listener.
+     * Creates a {@code BackgroundTask} which when executed will save a
+     * specified state of ExaltedCombat to a given file. The completion of the
+     * task can be detected by a user specified listener.
      * <P>
      * The task will notify the listener in the context of its
-     * {@link org.jtrim.access.AccessToken write token}.
+     * {@code SwingReporter} which is executes task in the context of the
+     * access token if executed by a {@code BackgroundTaskExecutor}.
      * <P>
      * Saved states can later be retrieved by a task returned by the
      * {@link #createLoadRewTask(Path, LoadDoneListener)} method.
@@ -215,16 +220,16 @@ public final class ExaltedSaveHelper {
      * @param doneListener the listener to be notified when the returned task
      *   had been executed and has terminated. This argument cannot be
      *   {@code null}
-     * @return the {@link RewTask REW} (Read, Evaluate, Write) task which when
-     *   executed will save a specified state of ExaltedCombat. This method
-     *   never returns {@code null}.
+     * @return the {@code BackgroundTask} which when executed will save a
+     *   specified state of ExaltedCombat. This method never returns
+     *   {@code null}.
      *
      * @throws NullPointerException thrown if {@code savePath}
      *   or {@code saveInfo} or {@code doneListener} is {@code null}
      *
      * @see IdempotentSaveListener
      */
-    public static RewTask<?, ?> createSaveRewTask(Path savePath,
+    public static BackgroundTask createSaveRewTask(Path savePath,
             SaveInfo saveInfo,
             boolean mayOverwrite,
             SaveDoneListener doneListener) {
@@ -232,17 +237,12 @@ public final class ExaltedSaveHelper {
     }
 
     /**
-     * Creates a {@link RewTask REW} (Read, Evaluate, Write) task which when
-     * executed will load a saved state of ExaltedCombat from a given file.
-     * The saved state will be forwarded to the user specified listener.
-     * <P>
-     * The task will notify the listener in the context of its
-     * {@link org.jtrim.access.AccessToken write token}.
+     * Creates an {@code AsyncDataLink} which will provide the loaded save file
      *
      * @param savePath the file from which the state of ExaltedCombat is to be
      *   retrieved. This argument cannot be {@code null}.
-     * @param taskOnSuccess the listener to be notified if the saved state was
-     *   successfully loaded. This argument cannot be {@code null}.
+     * @param bckgExecutor the executor which actually used to read the save
+     *   file. This argument cannot be {@code null}.
      *
      * @return the {@link RewTask REW} (Read, Evaluate, Write) task which when
      *   executed will load a saved state of ExaltedCombat. This method never
@@ -251,10 +251,21 @@ public final class ExaltedSaveHelper {
      * @throws NullPointerException thrown if {@code savePath} or
      *   {@code taskOnSuccess} is {@code null}.
      */
-    public static RewTask<?, ?> createLoadRewTask(
+    public static AsyncDataLink<SaveInfo> createLoadRewTask(
             Path savePath,
-            LoadDoneListener taskOnSuccess) {
-        return new LoadRewTask(savePath, taskOnSuccess);
+            TaskExecutor bckgExecutor) {
+        AsyncDataLink<Object> result = new AsyncChannelLink<>(
+                bckgExecutor,
+                SyncTaskExecutor.getSimpleExecutor(),
+                new FileChannelOpener(savePath),
+                new DeserializerChannelProcessor());
+
+        return AsyncLinks.convertResult(result, new DataConverter<Object, SaveInfo>() {
+            @Override
+            public SaveInfo convertData(Object data) {
+                return (SaveInfo)data;
+            }
+        });
     }
 
     /**
@@ -288,46 +299,6 @@ public final class ExaltedSaveHelper {
         try (OutputStream output = Files.newOutputStream(file, CREATE, TRUNCATE_EXISTING)) {
             new OutputStreamWriter(output, DEFAULT_CHARSET).append(line).flush();
         }
-    }
-
-    static Future<SaveInfo> getSaveInfoProvider(Path file) {
-        final Future<Object> result = new CancelableDeserializer(file);
-
-        return new Future<SaveInfo>() {
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return result.cancel(mayInterruptIfRunning);
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return result.isCancelled();
-            }
-
-            @Override
-            public boolean isDone() {
-                return result.isDone();
-            }
-
-            private SaveInfo cast(Object saveInfo) throws ExecutionException {
-                if (saveInfo instanceof SaveInfo) {
-                    return (SaveInfo)saveInfo;
-                }
-                else {
-                    throw new ExecutionException(new IOException("Invalid save file."));
-                }
-            }
-
-            @Override
-            public SaveInfo get() throws InterruptedException, ExecutionException {
-                return cast(result.get());
-            }
-
-            @Override
-            public SaveInfo get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return cast(result.get(timeout, unit));
-            }
-        };
     }
 
     /**

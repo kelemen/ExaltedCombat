@@ -16,9 +16,6 @@ import java.awt.Component;
 import java.awt.event.*;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,10 +25,13 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.jtrim.access.*;
-import org.jtrim.access.task.GenericRewTaskExecutor;
-import org.jtrim.access.task.RewTask;
-import org.jtrim.access.task.RewTaskExecutor;
-import org.jtrim.concurrent.ExecutorsEx;
+import org.jtrim.cancel.Cancellation;
+import org.jtrim.cancel.CancellationSource;
+import org.jtrim.concurrent.TaskExecutorService;
+import org.jtrim.concurrent.ThreadPoolTaskExecutor;
+import org.jtrim.concurrent.async.AsyncDataLink;
+import org.jtrim.concurrent.async.AsyncDataListener;
+import org.jtrim.concurrent.async.AsyncReport;
 import org.jtrim.event.EventTracker;
 import org.jtrim.event.LinkedEventTracker;
 import org.jtrim.event.TrackedEvent;
@@ -39,7 +39,10 @@ import org.jtrim.event.TrackedEventListener;
 import org.jtrim.swing.access.ComponentDecorator;
 import org.jtrim.swing.access.DecoratorPanelFactory;
 import org.jtrim.swing.access.DelayedDecorator;
+import org.jtrim.swing.concurrent.BackgroundTask;
+import org.jtrim.swing.concurrent.BackgroundTaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
+import org.jtrim.swing.concurrent.async.BackgroundDataProvider;
 import resources.icons.IconStorage;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -127,15 +130,16 @@ public class TickCombatFrame extends JFrame {
 
     private final UndoManager undoManager;
 
-    private final ExecutorService backgroundExecutor;
-    private final RewTaskExecutor rewExecutor;
+    private final TaskExecutorService backgroundExecutor;
+    private final BackgroundTaskExecutor<TaskID, HierarchicalRight> bckgTaskExecutor;
+    private final BackgroundDataProvider<TaskID, HierarchicalRight> bckgDataProvider;
     private final AccessManager<TaskID, HierarchicalRight> accessManager;
 
     /**
      * The future controlling the outstanding combat loading process.
      *
      */
-    private Future<?> currentLoadFuture;
+    private final CancellationSource dlgCancelSource;
 
     /**
      * Creates a new frame containing an empty population and noone in combat.
@@ -143,14 +147,15 @@ public class TickCombatFrame extends JFrame {
      * world.
      */
     public TickCombatFrame() {
-        this.backgroundExecutor = ExecutorsEx.newMultiThreadedExecutor(1, false, "ExaltedCombat Executor");
-        this.rewExecutor = new GenericRewTaskExecutor(backgroundExecutor);
+        this.dlgCancelSource = Cancellation.createCancellationSource();
+        this.backgroundExecutor = new ThreadPoolTaskExecutor("ExaltedCombat Executor", 1);
 
         RightGroupHandler rightHandler = new RightGroupHandler();
         this.accessManager = new HierarchicalAccessManager<>(
-                SwingTaskExecutor.getSimpleExecutor(false),
                 SwingTaskExecutor.getStrictExecutor(false),
                 rightHandler);
+        this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
+        this.bckgDataProvider = new BackgroundDataProvider<>(accessManager);
 
         DecoratorPanelFactory blockingPanelFactory = new DecoratorPanelFactory() {
             @Override
@@ -191,7 +196,6 @@ public class TickCombatFrame extends JFrame {
         this.definitionsModified = false;
         this.currentCombatPath = null;
         this.eventTracker = new RecursionStopperEventTracker(new LinkedEventTracker());
-        this.currentLoadFuture = null;
 
         initComponents();
 
@@ -314,7 +318,7 @@ public class TickCombatFrame extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    cancelCurrentLoad();
+                    dlgCancelSource.getController().cancel();
 
                     saveCurrentCombat(new SaveDoneListener() {
                         @Override
@@ -540,33 +544,9 @@ public class TickCombatFrame extends JFrame {
                 storeFrame.getStoredEntities());
 
         if (currentCombatPath != null) {
-            TaskID requestID = SAVE_REQUEST.getRequestID();
-            AccessToken<?> readToken = AccessTokens.createSyncToken(requestID);
-            AccessResult<?> writeAccess = accessManager.tryGetAccess(SAVE_REQUEST);
-            if (!writeAccess.isAvailable()) {
-                return false;
-            }
-
-            RewTask<?, ?> saveTask = ExaltedSaveHelper.createSaveRewTask(
+            BackgroundTask saveTask = ExaltedSaveHelper.createSaveRewTask(
                     currentCombatPath, toSave, true, idempotentListener);
-
-            AccessToken<?> writeToken = writeAccess.getAccessToken();
-            rewExecutor.executeAndRelease(saveTask, readToken, writeToken);
-
-            // Although the token and the rew task should never be canceled:
-            // to be on the safe side, we consider this case as well.
-            AccessListener shutdownListener = new AccessListener() {
-                @Override
-                public void onLostAccess() {
-                    idempotentListener.onFailedSave(new CancellationException());
-                }
-            };
-            writeToken.addAccessListener(shutdownListener);
-            if (writeToken.isTerminated()) {
-                shutdownListener.onLostAccess();
-            }
-
-            return true;
+            return bckgTaskExecutor.tryExecute(SAVE_REQUEST, saveTask) == null;
         }
 
         SaveCombatDialog saveDlg = new SaveCombatDialog(this, true, toSave);
@@ -661,30 +641,38 @@ public class TickCombatFrame extends JFrame {
      * @throws NullPointerException thrown if {@code file} is {@code null}
      */
     public void loadCombat(final Path file) {
-        LoadDoneListener listener = new LoadDoneListener() {
+        AsyncDataLink<SaveInfo> loadLink = ExaltedSaveHelper.createLoadRewTask(file, backgroundExecutor);
+        loadLink = bckgDataProvider.createLink(SAVE_REQUEST, loadLink);
+        loadLink.getData(dlgCancelSource.getToken(), new AsyncDataListener<SaveInfo>() {
+            private SaveInfo saveInfo = null;
+
             @Override
-            public void onSuccessfulLoad(SaveInfo saveInfo) {
-                // This is not necessary but is now an unneeded reference
-                currentLoadFuture = null;
-                loadCombat(saveInfo, file);
+            public boolean requireData() {
+                return true;
             }
 
             @Override
-            public void onFailedLoad(Throwable error) {
-                ExaltedDialogHelper.displayError(TickCombatFrame.this,
-                        ERROR_WHILE_LOADING_CAPTION.toString(), error);
+            public void onDataArrive(SaveInfo data) {
+                saveInfo = data;
             }
-        };
 
-        TaskID requestID = LOAD_REQUEST.getRequestID();
-        AccessToken<?> readToken = AccessTokens.createSyncToken(requestID);
-        AccessResult<?> writeAccess = accessManager.tryGetAccess(LOAD_REQUEST);
-        if (!writeAccess.isAvailable()) {
-            return;
-        }
+            @Override
+            public void onDoneReceive(AsyncReport report) {
+                if (report.isCanceled()) {
+                    return;
+                }
 
-        RewTask<?, ?> loadTask = ExaltedSaveHelper.createLoadRewTask(file, listener);
-        currentLoadFuture = rewExecutor.executeAndRelease(loadTask, readToken, writeAccess.getAccessToken());
+                if (report.isSuccess()) {
+                    loadCombat(saveInfo, file);
+                }
+                else {
+                    ExaltedDialogHelper.displayError(
+                            TickCombatFrame.this,
+                            ERROR_WHILE_LOADING_CAPTION.toString(),
+                            report.getException());
+                }
+            }
+        });
     }
 
     /**
@@ -702,14 +690,6 @@ public class TickCombatFrame extends JFrame {
 
             Path choosenPath = loadDlg.getChoosenCombat();
             loadCombat(choosenPath);
-        }
-    }
-
-    private void cancelCurrentLoad() {
-        Future<?> futureToCancel = currentLoadFuture;
-        if (futureToCancel != null) {
-            currentLoadFuture = null;
-            futureToCancel.cancel(true);
         }
     }
 

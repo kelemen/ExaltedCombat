@@ -132,7 +132,7 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
+    public ListenerRef addCombatPosListener(
             CombatPosEventListener<EntityType> listener) {
         return model.addCombatPosListener(listener);
     }

@@ -14,12 +14,15 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import org.jtrim.cancel.Cancellation;
+import org.jtrim.cancel.CancellationToken;
+import org.jtrim.concurrent.CancelableTask;
+import org.jtrim.concurrent.TaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
@@ -51,7 +54,7 @@ public class LoadCombatDialog extends JDialog {
 
     private static Collator STR_CMP = StringContainer.getDefault().getStringCollator();
 
-    private static final Executor SWING_EXECUTOR = SwingTaskExecutor.getSimpleExecutor(true);
+    private static final TaskExecutor SWING_EXECUTOR = SwingTaskExecutor.getSimpleExecutor(true);
     private final ExecutorService taskExecutor;
 
     private Path choosenCombat;
@@ -131,9 +134,9 @@ public class LoadCombatDialog extends JDialog {
     }
 
     private void showError(final String caption, final String errorText) {
-        SWING_EXECUTOR.execute(new Runnable() {
+        SWING_EXECUTOR.execute(Cancellation.UNCANCELABLE_TOKEN, new CancelableTask() {
             @Override
-            public void run() {
+            public void execute(CancellationToken cancelToken) {
                 // Don't annoy the user with an error message if she/he has
                 // already closed it.
                 if (isVisible()) {
@@ -141,7 +144,7 @@ public class LoadCombatDialog extends JDialog {
                             errorText, caption, JOptionPane.ERROR_MESSAGE);
                 }
             }
-        });
+        }, null);
     }
 
     private enum CombatFileItemComparator implements Comparator<CombatFileItem> {
@@ -219,9 +222,9 @@ public class LoadCombatDialog extends JDialog {
             final CombatFileItem[] comboEntries = combatFiles.toArray(new CombatFileItem[combatFiles.size()]);
             Arrays.sort(comboEntries, CombatFileItemComparator.INSTANCE);
 
-            SWING_EXECUTOR.execute(new Runnable() {
+            SWING_EXECUTOR.execute(Cancellation.UNCANCELABLE_TOKEN, new CancelableTask() {
                 @Override
-                public void run() {
+                public void execute(CancellationToken cancelToken) {
                     jCombatCombo.setModel(
                             new DefaultComboBoxModel<>(comboEntries));
 
@@ -230,7 +233,7 @@ public class LoadCombatDialog extends JDialog {
                     }
                     checkEnable();
                 }
-            });
+            }, null);
         }
     }
 

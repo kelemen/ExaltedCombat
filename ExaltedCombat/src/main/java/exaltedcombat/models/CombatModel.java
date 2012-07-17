@@ -68,8 +68,7 @@ public interface CombatModel<EntityType> {
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public ListenerRef<CombatStateChangeListener> addCombatStateChangeListener(
-            CombatStateChangeListener listener);
+    public ListenerRef addCombatStateChangeListener(CombatStateChangeListener listener);
 
     /**
      * Returns the current state of the combat. The combat can be either the

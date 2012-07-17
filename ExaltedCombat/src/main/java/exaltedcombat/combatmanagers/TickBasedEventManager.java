@@ -64,8 +64,7 @@ implements
      * {@inheritDoc }
      */
     @Override
-    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
-            CombatPosEventListener<EntityType> listener) {
+    public ListenerRef addCombatPosListener(CombatPosEventListener<EntityType> listener) {
         return listeners.registerListener(listener);
     }
 

@@ -161,7 +161,7 @@ public final class GeneralCombatModel implements CombatModel<CombatEntity> {
      * {@inheritDoc }
      */
     @Override
-    public ListenerRef<CombatStateChangeListener> addCombatStateChangeListener(
+    public ListenerRef addCombatStateChangeListener(
             CombatStateChangeListener listener) {
         return listeners.registerListener(listener);
     }

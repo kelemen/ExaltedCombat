@@ -2,9 +2,9 @@ package exaltedcombat.save;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import org.jtrim.access.task.RewTask;
-import org.jtrim.access.task.RewTaskReporter;
-import org.jtrim.access.task.TaskProgress;
+import org.jtrim.cancel.CancellationToken;
+import org.jtrim.swing.concurrent.BackgroundTask;
+import org.jtrim.swing.concurrent.SwingReporter;
 import org.jtrim.utils.ExceptionHelper;
 
 /**
@@ -14,7 +14,7 @@ import org.jtrim.utils.ExceptionHelper;
  *
  * @author Kelemen Attila
  */
-final class SaveRewTask implements RewTask<Void, SaveRewTask.SaveResult> {
+final class SaveRewTask implements BackgroundTask {
     private final String combatName;
     private final Path savePath;
     private final SaveInfo saveInfo;
@@ -55,11 +55,6 @@ final class SaveRewTask implements RewTask<Void, SaveRewTask.SaveResult> {
         this.doneListener = doneListener;
     }
 
-    @Override
-    public Void readInput() {
-        return null;
-    }
-
     private Path doSave() throws IOException {
         Path fileName = savePath != null
                 ? savePath
@@ -69,7 +64,7 @@ final class SaveRewTask implements RewTask<Void, SaveRewTask.SaveResult> {
     }
 
     @Override
-    public SaveResult evaluate(Void input, RewTaskReporter reporter) throws InterruptedException {
+    public void execute(CancellationToken cancelToken, SwingReporter reporter) {
         Throwable saveError = null;
         Path path = null;
         try {
@@ -77,47 +72,20 @@ final class SaveRewTask implements RewTask<Void, SaveRewTask.SaveResult> {
         } catch (Throwable ex) {
             saveError = ex;
         }
-        return new SaveResult(path, saveError);
+        writeOutput(reporter, path, saveError);
     }
 
-    @Override
-    public void writeOutput(SaveResult output) {
-        Throwable saveError = output.getSaveError();
-        if (saveError != null) {
-            doneListener.onFailedSave(saveError);
-        }
-        else {
-            doneListener.onSuccessfulSave(output.getSavePath());
-        }
-    }
-
-    @Override
-    public void writeProgress(TaskProgress<?> progress) {
-    }
-
-    @Override
-    public void writeData(Object data) {
-    }
-
-    @Override
-    public void cancel() {
-    }
-
-    static final class SaveResult {
-        private final Path savePath;
-        private final Throwable saveError;
-
-        public SaveResult(Path savePath, Throwable saveError) {
-            this.savePath = savePath;
-            this.saveError = saveError;
-        }
-
-        public Throwable getSaveError() {
-            return saveError;
-        }
-
-        public Path getSavePath() {
-            return savePath;
-        }
+    public void writeOutput(SwingReporter reporter, final Path savePath, final Throwable saveError) {
+        reporter.writeData(new Runnable() {
+            @Override
+            public void run() {
+                if (saveError != null) {
+                    doneListener.onFailedSave(saveError);
+                }
+                else {
+                    doneListener.onSuccessfulSave(savePath);
+                }
+            }
+        });
     }
 }

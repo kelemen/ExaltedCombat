@@ -91,9 +91,7 @@ public final class RecursionStopperEventTracker implements EventTracker {
         }
 
         @Override
-        public ListenerRef<TrackedEventListener<ArgType>> registerListener(
-                final TrackedEventListener<ArgType> listener) {
-
+        public ListenerRef registerListener(final TrackedEventListener<ArgType> listener) {
             return wrappedManager.registerListener(new TrackedEventListener<ArgType>() {
                 @Override
                 public void onEvent(TrackedEvent<ArgType> trackedEvent) {

@@ -80,7 +80,7 @@ public final class CombatEntities {
         public void onChangedEntities();
     }
 
-    private final Map<CombatEntity, ListenerRef<?>> entities;
+    private final Map<CombatEntity, ListenerRef> entities;
     private CombatEntity selected;
 
     private final ListenerManager<UpdateListener, Void> updateListeners;
@@ -171,7 +171,7 @@ public final class CombatEntities {
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public ListenerRef<ChangeListener> addChangeListener(ChangeListener listener) {
+    public ListenerRef addChangeListener(ChangeListener listener) {
         return changeListeners.registerListener(listener);
     }
 
@@ -195,7 +195,7 @@ public final class CombatEntities {
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public ListenerRef<UpdateListener> addUpdateListener(UpdateListener listener) {
+    public ListenerRef addUpdateListener(UpdateListener listener) {
         return updateListeners.registerListener(listener);
     }
 
@@ -258,7 +258,7 @@ public final class CombatEntities {
 
         CombatEntity currentSelection = selected;
         if (currentSelection == null) {
-            for (ListenerRef<?> listenerRef: entities.values()) {
+            for (ListenerRef listenerRef: entities.values()) {
                 listenerRef.unregister();
             }
             entities.clear();
@@ -299,7 +299,7 @@ public final class CombatEntities {
             }
         }
 
-        ListenerRef<?> listenerRef = entities.remove(entity);
+        ListenerRef listenerRef = entities.remove(entity);
         if (listenerRef != null) {
             listenerRef.unregister();
             dispatchChangedEntites();
@@ -361,8 +361,8 @@ public final class CombatEntities {
                 // guarantees in the face of concurrent modifications.
                 ExceptionHelper.checkNotNullArgument(entity, "newEntities[?]");
 
-                ListenerRef<?> listenerRef = entity.addUpdateListener(entityUpdateListener);
-                ListenerRef<?> prevRef = entities.put(entity, listenerRef);
+                ListenerRef listenerRef = entity.addUpdateListener(entityUpdateListener);
+                ListenerRef prevRef = entities.put(entity, listenerRef);
                 if (prevRef != null) {
                     prevRef.unregister();
                 }

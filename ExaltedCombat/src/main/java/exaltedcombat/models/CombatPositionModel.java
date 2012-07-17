@@ -46,8 +46,7 @@ public interface CombatPositionModel<EntityType> {
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public ListenerRef<CombatPosEventListener<EntityType>> addCombatPosListener(
-            CombatPosEventListener<EntityType> listener);
+    public ListenerRef addCombatPosListener(CombatPosEventListener<EntityType> listener);
 
     /**
      * Returns the number of entities currently in combat.

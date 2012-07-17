@@ -7,15 +7,19 @@ import exaltedcombat.save.SaveInfo;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
 import javax.swing.JDialog;
 import javax.swing.event.DocumentEvent;
 import org.jtrim.access.*;
-import org.jtrim.access.task.GenericRewTaskExecutor;
-import org.jtrim.access.task.RewTask;
-import org.jtrim.access.task.RewTaskExecutor;
-import org.jtrim.concurrent.ExecutorsEx;
+import org.jtrim.cancel.Cancellation;
+import org.jtrim.cancel.CancellationToken;
+import org.jtrim.concurrent.CancelableTask;
+import org.jtrim.concurrent.CleanupTask;
+import org.jtrim.concurrent.TaskExecutor;
+import org.jtrim.concurrent.TaskExecutorService;
+import org.jtrim.concurrent.ThreadPoolTaskExecutor;
 import org.jtrim.swing.access.ComponentDisabler;
+import org.jtrim.swing.concurrent.BackgroundTask;
+import org.jtrim.swing.concurrent.BackgroundTaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
@@ -45,10 +49,10 @@ public class SaveCombatDialog extends JDialog {
     private static final AccessRequest<String, HierarchicalRight> SAVE_REQUEST
             = AccessRequest.getWriteRequest(
                 "FINALIZE-SAVE",
-                HierarchicalRight.create("SAVE-RIGHT"));;
+                HierarchicalRight.create("SAVE-RIGHT"));
 
-    private final ExecutorService backgroundExecutor;
-    private final RewTaskExecutor rewExecutor;
+    private final TaskExecutorService backgroundExecutor;
+    private final BackgroundTaskExecutor<String, HierarchicalRight> bckgTaskExecutor;
     private final AccessManager<String, HierarchicalRight> accessManager;
     private final SaveInfo saveInfo;
     private boolean dialogClosed;
@@ -75,8 +79,7 @@ public class SaveCombatDialog extends JDialog {
 
         ExceptionHelper.checkNotNullArgument(saveInfo, "saveInfo");
 
-        this.backgroundExecutor = ExecutorsEx.newMultiThreadedExecutor(1, false, "SaveDlg Executor");
-        this.rewExecutor = new GenericRewTaskExecutor(backgroundExecutor);
+        this.backgroundExecutor = new ThreadPoolTaskExecutor("SaveDlg Executor", 1);
         this.savePath = null;
         this.dialogClosed = false;
         this.accepted = false;
@@ -86,9 +89,10 @@ public class SaveCombatDialog extends JDialog {
 
         RightGroupHandler rightHandler = new RightGroupHandler();
         this.accessManager = new HierarchicalAccessManager<>(
-                SwingTaskExecutor.getSimpleExecutor(false),
                 SwingTaskExecutor.getStrictExecutor(false),
                 rightHandler);
+        this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
+
         rightHandler.addGroupListener(
                 null,
                 SAVE_REQUEST.getWriteRights(),
@@ -187,13 +191,21 @@ public class SaveCombatDialog extends JDialog {
     }
 
     private void cancelAndExit() {
-        AccessResult<String> cancelTask = accessManager.getScheduledAccess(SAVE_REQUEST);
-        cancelTask.shutdownBlockingTokensNow();
+        final AccessResult<String> cancelTask = accessManager.getScheduledAccess(SAVE_REQUEST);
+        cancelTask.releaseAndCancelBlockingTokens();
 
-        cancelTask.getAccessToken().executeAndShutdown(new Runnable() {
+        TaskExecutor closeExecutor = cancelTask.getAccessToken().createExecutor(
+                SwingTaskExecutor.getStrictExecutor(true));
+
+        closeExecutor.execute(Cancellation.UNCANCELABLE_TOKEN, new CancelableTask() {
             @Override
-            public void run() {
+            public void execute(CancellationToken cancelToken) {
                 returnDialog(null);
+            }
+        }, new CleanupTask() {
+            @Override
+            public void cleanup(boolean canceled, Throwable error) throws Exception {
+                cancelTask.release();
             }
         });
     }
@@ -286,14 +298,7 @@ public class SaveCombatDialog extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOkButtonActionPerformed
-        String requestID = SAVE_REQUEST.getRequestID();
-        AccessToken<String> readToken = AccessTokens.createSyncToken(requestID);
-        AccessResult<String> writeAccess = accessManager.tryGetAccess(SAVE_REQUEST);
-        if (!writeAccess.isAvailable()) {
-            return;
-        }
-
-        RewTask<?, ?> rewTask = ExaltedSaveHelper.createSaveRewTask(
+        BackgroundTask saveTask = ExaltedSaveHelper.createSaveRewTask(
                 getCombatName(),
                 saveInfo,
                 false,
@@ -310,11 +315,7 @@ public class SaveCombatDialog extends JDialog {
                         ERROR_WHILE_SAVING_CAPTION.toString(), saveError);
             }
         });
-
-        rewExecutor.executeNowAndRelease(
-                rewTask,
-                readToken,
-                writeAccess.getAccessToken());
+        bckgTaskExecutor.tryExecute(SAVE_REQUEST, saveTask);
     }//GEN-LAST:event_jOkButtonActionPerformed
 
     private void jCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCancelButtonActionPerformed

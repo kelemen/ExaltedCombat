@@ -197,7 +197,7 @@ public final class CombatEntity {
      * @throws NullPointerException thrown if the specified listener is
      *   {@code null}
      */
-    public ListenerRef<UpdateListener> addUpdateListener(UpdateListener listener) {
+    public ListenerRef addUpdateListener(UpdateListener listener) {
         return listeners.registerListener(listener);
     }
 

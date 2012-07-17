@@ -1,8 +1,11 @@
 package exaltedcombat.events;
 
-import java.util.concurrent.Executor;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jtrim.cancel.Cancellation;
+import org.jtrim.cancel.CancellationToken;
+import org.jtrim.concurrent.CancelableTask;
+import org.jtrim.concurrent.TaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
 
 /**
@@ -24,7 +27,7 @@ import org.jtrim.swing.concurrent.SwingTaskExecutor;
  * @author Kelemen Attila
  */
 public abstract class SimpleDocChangeListener implements DocumentListener {
-    private static final Executor SWING_EXECUTOR = SwingTaskExecutor.getSimpleExecutor(false);
+    private static final TaskExecutor SWING_EXECUTOR = SwingTaskExecutor.getSimpleExecutor(false);
 
     /**
      * {@inheritDoc }
@@ -66,12 +69,12 @@ public abstract class SimpleDocChangeListener implements DocumentListener {
     }
 
     private void dispatchOnChange(final DocumentEvent e) {
-        SWING_EXECUTOR.execute(new Runnable() {
+        SWING_EXECUTOR.execute(Cancellation.UNCANCELABLE_TOKEN, new CancelableTask() {
             @Override
-            public void run() {
+            public void execute(CancellationToken cancelToken) {
                 onChange(e);
             }
-        });
+        }, null);
     }
 
     /**

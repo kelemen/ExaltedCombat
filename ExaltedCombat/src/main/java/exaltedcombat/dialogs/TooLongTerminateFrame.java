@@ -3,6 +3,9 @@ package exaltedcombat.dialogs;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.TimeUnit;
+import org.jtrim.cancel.Cancellation;
+import org.jtrim.cancel.CancellationToken;
+import org.jtrim.concurrent.CancelableTask;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import org.jtrim.utils.ExceptionHelper;
 import resources.icons.IconStorage;
@@ -113,15 +116,16 @@ public class TooLongTerminateFrame extends javax.swing.JFrame {
             public void run() {
                 try {
                     timeUnit.sleep(firstWaitTime);
-                    SwingTaskExecutor.getSimpleExecutor(true).execute(new Runnable() {
+                    SwingTaskExecutor.getSimpleExecutor(true).execute(Cancellation.UNCANCELABLE_TOKEN,
+                            new CancelableTask() {
                         @Override
-                        public void run() {
+                        public void execute(CancellationToken cancelToken) {
                             TooLongTerminateFrame frame = new TooLongTerminateFrame();
                             frame.setLocationRelativeTo(null);
                             frame.setWaitTime(nextWaitTime, timeUnit);
                             frame.setVisible(true);
                         }
-                    });
+                    }, null);
                 } catch (InterruptedException ex) {
                     // The thread will terminate
                 }

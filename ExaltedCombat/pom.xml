@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.jtrim</groupId>
             <artifactId>jtrim-gui</artifactId>
-            <version>0.7</version>
+            <version>1.2-alpha</version>
         </dependency>
     </dependencies>
 
