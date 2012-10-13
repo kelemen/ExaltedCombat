@@ -1,7 +1,7 @@
 package exaltedcombat.events;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import org.jtrim.concurrent.TaskExecutor;
+import org.jtrim.concurrent.TaskExecutorService;
 import org.jtrim.event.*;
 import org.jtrim.utils.ExceptionHelper;
 
@@ -60,7 +60,7 @@ public final class RecursionStopperEventTracker implements EventTracker {
      * {@inheritDoc }
      */
     @Override
-    public Executor createTrackedExecutor(Executor executor) {
+    public TaskExecutor createTrackedExecutor(TaskExecutor executor) {
         return wrappedTracker.createTrackedExecutor(executor);
     }
 
@@ -68,7 +68,7 @@ public final class RecursionStopperEventTracker implements EventTracker {
      * {@inheritDoc }
      */
     @Override
-    public ExecutorService createTrackedExecutorService(ExecutorService executor) {
+    public TaskExecutorService createTrackedExecutorService(TaskExecutorService executor) {
         return wrappedTracker.createTrackedExecutorService(executor);
     }
 

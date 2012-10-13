@@ -647,11 +647,6 @@ public class TickCombatFrame extends JFrame {
             private SaveInfo saveInfo = null;
 
             @Override
-            public boolean requireData() {
-                return true;
-            }
-
-            @Override
             public void onDataArrive(SaveInfo data) {
                 saveInfo = data;
             }
