@@ -1,7 +1,10 @@
-build/
 dist/
 private/
 out/
+.gradle/
+
+/build/
 /ExaltedCombat/.settings/
 /ExaltedCombat/.idea/
 /ExaltedCombat/target/
+/ExaltedCombat/build/
