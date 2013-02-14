@@ -150,27 +150,24 @@ public class TickCombatFrame extends JFrame {
         this.dlgCancelSource = Cancellation.createCancellationSource();
         this.backgroundExecutor = new ThreadPoolTaskExecutor("ExaltedCombat Executor", 1);
 
-        RightGroupHandler rightHandler = new RightGroupHandler();
         this.accessManager = new HierarchicalAccessManager<>(
-                SwingTaskExecutor.getStrictExecutor(false),
-                rightHandler);
+                SwingTaskExecutor.getStrictExecutor(false));
+
         this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
         this.bckgDataProvider = new BackgroundDataProvider<>(accessManager);
 
+        AccessAvailabilityNotifier<HierarchicalRight> rightHandler = AccessAvailabilityNotifier.attach(accessManager);
         DecoratorPanelFactory blockingPanelFactory = new DecoratorPanelFactory() {
             @Override
-            public JPanel createPanel(Component decorated, AccessManager<?, HierarchicalRight> accessManager) {
+            public JPanel createPanel(Component decorated) {
                 BlockingMessagePanel result = new BlockingMessagePanel();
                 result.addMouseListener(new MouseAdapter() {});
                 result.addMouseMotionListener(new MouseMotionAdapter() {});
                 result.addMouseWheelListener(new MouseAdapter() {});
                 result.addKeyListener(new KeyAdapter() {});
 
-                // This cast is obviously safe and required only because Java
-                // does not handle nested generic types well.
-                @SuppressWarnings("unchecked")
-                Collection<AccessToken<?>> blockingTokens
-                        = (Collection<AccessToken<?>>)accessManager.getBlockingTokens(
+                Collection<AccessToken<TaskID>> blockingTokens
+                        = accessManager.getBlockingTokens(
                             Collections.<HierarchicalRight>emptySet(),
                             Collections.<HierarchicalRight>singleton(BACKROUND_TASK_RIGHT));
                 if (!blockingTokens.isEmpty()) {
@@ -189,7 +186,6 @@ public class TickCombatFrame extends JFrame {
         rightHandler.addGroupListener(
                 null,
                 Collections.singleton(BACKROUND_TASK_RIGHT),
-                false,
                 decorator);
 
         this.undoManager = new UndoManager();

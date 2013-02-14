@@ -87,16 +87,15 @@ public class SaveCombatDialog extends JDialog {
 
         initComponents();
 
-        RightGroupHandler rightHandler = new RightGroupHandler();
         this.accessManager = new HierarchicalAccessManager<>(
-                SwingTaskExecutor.getStrictExecutor(false),
-                rightHandler);
+                SwingTaskExecutor.getStrictExecutor(false));
+        AccessAvailabilityNotifier<HierarchicalRight> rightHandler = AccessAvailabilityNotifier.attach(accessManager);
+
         this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
 
         rightHandler.addGroupListener(
                 null,
                 SAVE_REQUEST.getWriteRights(),
-                true,
                 new ComponentDisabler(jOkButton));
 
         getRootPane().setDefaultButton(jOkButton);
