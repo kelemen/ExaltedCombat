@@ -45,7 +45,7 @@ implements
     private final Map<EntityType, Integer> timeTable;
     private final SortedMap<Integer, List<EntityType>> ticks;
 
-    private final ListenerManager<CombatPosEventListener<EntityType>, Void> listeners;
+    private final ListenerManager<CombatPosEventListener<EntityType>> listeners;
 
     private int currentTick;
 

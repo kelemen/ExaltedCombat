@@ -37,7 +37,7 @@ import org.jtrim.utils.ExceptionHelper;
 public final class GeneralCombatModel implements CombatModel<CombatEntity> {
     private static final int HIGHEST_START_TICK_OFFSET = 6;
 
-    private final ListenerManager<CombatStateChangeListener, Void> listeners;
+    private final ListenerManager<CombatStateChangeListener> listeners;
 
     private CombatPositionModel<CombatEntity> positionModel;
 

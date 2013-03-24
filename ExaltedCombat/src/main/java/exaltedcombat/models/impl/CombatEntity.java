@@ -102,7 +102,7 @@ public final class CombatEntity {
         public void onChangedPreviousAction(CombatEntity entity);
     }
 
-    private final ListenerManager<UpdateListener, CombatEntity> listeners;
+    private final ListenerManager<UpdateListener> listeners;
     private String shortName;
     private Color color;
     private String description;

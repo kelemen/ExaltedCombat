@@ -83,8 +83,8 @@ public final class CombatEntities {
     private final Map<CombatEntity, ListenerRef> entities;
     private CombatEntity selected;
 
-    private final ListenerManager<UpdateListener, Void> updateListeners;
-    private final ListenerManager<ChangeListener, Void> changeListeners;
+    private final ListenerManager<UpdateListener> updateListeners;
+    private final ListenerManager<ChangeListener> changeListeners;
     private final EventDispatcher<ChangeListener, Void> changedEntitiesDispatcher;
     private final UpdateListener entityUpdateListener;
 
