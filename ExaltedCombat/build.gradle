@@ -11,7 +11,7 @@ compilerOptions*.compilerArgs = ['-Xlint'];
 repositories {
     mavenCentral();
     maven {
-        url 'https://github.com/kelemen/JTrim-repo/raw/master/releases';
+        url 'http://dl.bintray.com/kelemen/maven';
     }
 }
 
