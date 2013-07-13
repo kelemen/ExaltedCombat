@@ -12,7 +12,6 @@ import exaltedcombat.models.CombatStateChangeListener;
 import exaltedcombat.models.impl.*;
 import exaltedcombat.panels.*;
 import exaltedcombat.save.*;
-import java.awt.Component;
 import java.awt.event.*;
 import java.nio.file.Path;
 import java.util.*;
@@ -36,9 +35,9 @@ import org.jtrim.event.EventTracker;
 import org.jtrim.event.LinkedEventTracker;
 import org.jtrim.event.TrackedEvent;
 import org.jtrim.event.TrackedEventListener;
-import org.jtrim.swing.access.ComponentDecorator;
-import org.jtrim.swing.access.DecoratorPanelFactory;
-import org.jtrim.swing.access.DelayedDecorator;
+import org.jtrim.property.swing.AutoDisplayState;
+import org.jtrim.property.swing.DelayedGlassPane;
+import org.jtrim.property.swing.GlassPaneFactory;
 import org.jtrim.swing.concurrent.BackgroundTask;
 import org.jtrim.swing.concurrent.BackgroundTaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
@@ -46,6 +45,9 @@ import org.jtrim.swing.concurrent.async.BackgroundDataProvider;
 import resources.icons.IconStorage;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
+
+import static org.jtrim.access.AccessProperties.*;
+import static org.jtrim.property.swing.AutoDisplayState.*;
 
 /**
  * The main frame of ExaltedCombat. The parts of this frame and therefore most
@@ -156,38 +158,6 @@ public class TickCombatFrame extends JFrame {
         this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
         this.bckgDataProvider = new BackgroundDataProvider<>(accessManager);
 
-        AccessAvailabilityNotifier<HierarchicalRight> rightHandler = AccessAvailabilityNotifier.attach(accessManager);
-        DecoratorPanelFactory blockingPanelFactory = new DecoratorPanelFactory() {
-            @Override
-            public JPanel createPanel(Component decorated) {
-                BlockingMessagePanel result = new BlockingMessagePanel();
-                result.addMouseListener(new MouseAdapter() {});
-                result.addMouseMotionListener(new MouseMotionAdapter() {});
-                result.addMouseWheelListener(new MouseAdapter() {});
-                result.addKeyListener(new KeyAdapter() {});
-
-                Collection<AccessToken<TaskID>> blockingTokens
-                        = accessManager.getBlockingTokens(
-                            Collections.<HierarchicalRight>emptySet(),
-                            Collections.<HierarchicalRight>singleton(BACKROUND_TASK_RIGHT));
-                if (!blockingTokens.isEmpty()) {
-                    // Only display the message of the first blocking task.
-                    result.setMessage(blockingTokens.iterator().next().getAccessID().toString());
-                }
-                else {
-                    result.setMessage(BACKGROUND_TASK_IN_PROGRESS_CAPTION.toString());
-                }
-                return result;
-            }
-        };
-        ComponentDecorator decorator = new ComponentDecorator(
-                this,
-                new DelayedDecorator(blockingPanelFactory, 200, TimeUnit.MILLISECONDS));
-        rightHandler.addGroupListener(
-                null,
-                Collections.singleton(BACKROUND_TASK_RIGHT),
-                decorator);
-
         this.undoManager = new UndoManager();
         this.definitionsModified = false;
         this.currentCombatPath = null;
@@ -271,6 +241,38 @@ public class TickCombatFrame extends JFrame {
         setIconImage(IconStorage.getMainIcon());
 
         defineEventHandlers();
+
+        setupComponentDecorators();
+    }
+
+    private void setupComponentDecorators() {
+        GlassPaneFactory blockingPanelFactory = new GlassPaneFactory() {
+            @Override
+            public JPanel createGlassPane() {
+                BlockingMessagePanel result = new BlockingMessagePanel();
+                result.addMouseListener(new MouseAdapter() {});
+                result.addMouseMotionListener(new MouseMotionAdapter() {});
+                result.addMouseWheelListener(new MouseAdapter() {});
+                result.addKeyListener(new KeyAdapter() {});
+
+                Collection<AccessToken<TaskID>> blockingTokens
+                        = accessManager.getBlockingTokens(
+                            Collections.<HierarchicalRight>emptySet(),
+                            Collections.<HierarchicalRight>singleton(BACKROUND_TASK_RIGHT));
+                if (!blockingTokens.isEmpty()) {
+                    // Only display the message of the first blocking task.
+                    result.setMessage(blockingTokens.iterator().next().getAccessID().toString());
+                }
+                else {
+                    result.setMessage(BACKGROUND_TASK_IN_PROGRESS_CAPTION.toString());
+                }
+                return result;
+            }
+        };
+
+        AutoDisplayState.addSwingStateListener(
+                trackWriteRightAvailable(accessManager, BACKROUND_TASK_RIGHT),
+                glassPaneSwitcher(this, new DelayedGlassPane(blockingPanelFactory, 200, TimeUnit.MILLISECONDS)));
     }
 
     /**

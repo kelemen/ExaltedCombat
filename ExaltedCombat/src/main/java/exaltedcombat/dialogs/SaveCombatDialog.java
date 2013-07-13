@@ -1,6 +1,5 @@
 package exaltedcombat.dialogs;
 
-import exaltedcombat.events.SimpleDocChangeListener;
 import exaltedcombat.save.ExaltedSaveHelper;
 import exaltedcombat.save.SaveDoneListener;
 import exaltedcombat.save.SaveInfo;
@@ -8,7 +7,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import javax.swing.JDialog;
-import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
 import org.jtrim.access.*;
 import org.jtrim.cancel.Cancellation;
 import org.jtrim.cancel.CancellationToken;
@@ -17,13 +16,20 @@ import org.jtrim.concurrent.CleanupTask;
 import org.jtrim.concurrent.TaskExecutor;
 import org.jtrim.concurrent.TaskExecutorService;
 import org.jtrim.concurrent.ThreadPoolTaskExecutor;
-import org.jtrim.swing.access.ComponentDisabler;
+import org.jtrim.property.PropertyFactory;
+import org.jtrim.property.PropertySource;
+import org.jtrim.property.swing.AutoDisplayState;
 import org.jtrim.swing.concurrent.BackgroundTask;
 import org.jtrim.swing.concurrent.BackgroundTaskExecutor;
 import org.jtrim.swing.concurrent.SwingTaskExecutor;
 import org.jtrim.utils.ExceptionHelper;
 import resources.strings.LocalizedString;
 import resources.strings.StringContainer;
+
+import static org.jtrim.access.AccessProperties.*;
+import static org.jtrim.property.swing.AutoDisplayState.*;
+import static org.jtrim.property.swing.SwingProperties.*;
+import static org.jtrim.property.BoolProperties.*;
 
 /**
  * Defines a dialog which allows the user to save a specified combat state.
@@ -89,25 +95,13 @@ public class SaveCombatDialog extends JDialog {
 
         this.accessManager = new HierarchicalAccessManager<>(
                 SwingTaskExecutor.getStrictExecutor(false));
-        AccessAvailabilityNotifier<HierarchicalRight> rightHandler = AccessAvailabilityNotifier.attach(accessManager);
-
         this.bckgTaskExecutor = new BackgroundTaskExecutor<>(accessManager, backgroundExecutor);
 
-        rightHandler.addGroupListener(
-                null,
-                SAVE_REQUEST.getWriteRights(),
-                new ComponentDisabler(jOkButton));
+        AutoDisplayState.addSwingStateListener(
+                and(not(textComponentEmpty(jCombatNameEdit)), trackRequestAvailable(accessManager, SAVE_REQUEST)),
+                componentDisabler(jOkButton));
 
         getRootPane().setDefaultButton(jOkButton);
-
-        final CombatNameEditChecker nameEditChecker = new CombatNameEditChecker();
-        jCombatNameEdit.getDocument().addDocumentListener(new SimpleDocChangeListener() {
-            @Override
-            protected void onChange(DocumentEvent e) {
-                nameEditChecker.check();
-            }
-        });
-        nameEditChecker.check();
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -120,6 +114,10 @@ public class SaveCombatDialog extends JDialog {
                 backgroundExecutor.shutdown();
             }
         });
+    }
+
+    private static PropertySource<Boolean> textComponentEmpty(JTextComponent component) {
+        return equalsWithConst(PropertyFactory.trimmedString(documentText(component.getDocument())), "");
     }
 
     /**
@@ -218,20 +216,6 @@ public class SaveCombatDialog extends JDialog {
         }
     }
 
-    private class CombatNameEditChecker {
-        private final RequestGrabber grabber = new RequestGrabber(
-                accessManager, SAVE_REQUEST);
-
-        public void check() {
-            if (getCombatName().isEmpty()) {
-                grabber.acquire();
-            }
-            else {
-                grabber.release();
-            }
-        }
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -297,8 +281,13 @@ public class SaveCombatDialog extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jOkButtonActionPerformed
+        String combatName = getCombatName();
+        if (combatName.isEmpty()) {
+            return;
+        }
+
         BackgroundTask saveTask = ExaltedSaveHelper.createSaveRewTask(
-                getCombatName(),
+                combatName,
                 saveInfo,
                 false,
                 new SaveDoneListener() {
